@@ -26,17 +26,43 @@
         .modal-content {
             transition: transform 0.5s ease;
         }
+
+        /* --- ESTILOS PARA RESPONSIVIDADE --- */
+        @media (max-width: 768px) {
+            #menu-container {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 50;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+                height: 100vh;
+            }
+
+            #menu-container.menu-open {
+                transform: translateX(0);
+            }
+
+            main {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-100">
 
-    <div class="flex h-screen">
-        <aside class="w-64 bg-slate-800 text-white flex flex-col flex-shrink-0">
+    <div class="flex h-screen relative overflow-hidden">
+        <aside class="w-64 bg-slate-800 text-white flex flex-col flex-shrink-0" id="menu-container">
+            <button id="close-menu-btn" class="absolute top-4 right-4 text-slate-400 hover:text-white md:hidden z-10" aria-label="botao">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
             <div class="p-6 flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-400"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>
                 <h1 class="text-xl font-bold">Dayle</h1>
             </div>
-            <nav class="flex-1 px-4 space-y-2" id="nav-menu">
+            <nav class="flex-1 px-4 space-y-2 overflow-y-auto" id="nav-menu">
                 <a href="#dashboard" class="nav-link bg-indigo-600 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition-colors hover:bg-indigo-500">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></svg>
                     <span>Painel</span>
@@ -70,15 +96,34 @@
                     <span>Metas</span>
                 </a>
             </nav>
+            <div class="mt-auto p-4 border-t border-slate-700" id="menu-perfil">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Perfis</h3>
+                <ul id="profile-list" class="space-y-1 mb-2"></ul>
+                <div class="flex items-center gap-2">
+                     <button id="add-profile-btn" class="w-full text-center bg-slate-700 text-slate-300 text-sm py-1.5 rounded hover:bg-slate-600 transition">Adicionar</button>
+                     <button id="delete-profile-btn" class="flex-shrink-0 bg-red-800/50 text-red-300 p-1.5 rounded hover:bg-red-800/80 transition" title="Excluir perfil atual">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                     </button>
+                </div>
+            </div>
         </aside>
 
-        <main class="flex-1 p-8 overflow-y-auto">
-            <section id="dashboard" class="page active">
+        <div id="menu-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden"></div>
+        
+        <main class="flex-1 p-8 overflow-y-auto w-full">
+            <div class="md:hidden flex items-center mb-6">
+                 <button id="open-menu-btn" class="text-slate-800 p-2 -ml-2" aria-label="botao">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
+                 </button>
+                 <h2 class="text-xl font-bold text-slate-800 ml-4">Dayle</h2>
+            </div>
+            
+            <section id="dashboard" class="page">
                 <h2 class="text-3xl font-bold text-slate-800 mb-6">Painel de Controle</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div class="bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="text-slate-500 font-medium">Tarefas Restantes Hoje</h3>
-                        <p id="db-tasks" class="text-4xl font-bold text-indigo-600 mt-2">...</span></p>
+                        <p id="db-tasks" class="text-4xl font-bold text-indigo-600 mt-2">...</p>
                     </div>
                     <div class="bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="text-slate-500 font-medium">Saldo Financeiro</h3>
@@ -93,16 +138,16 @@
                         <ul id="db-shopping" class="mt-2 space-y-1 text-slate-700"></ul>
                     </div>
                 </div>
-                 <div class="mt-8 bg-white p-6 rounded-lg shadow-sm">
+                <div class="mt-8 bg-white p-6 rounded-lg shadow-sm">
                     <h3 class="text-xl font-semibold text-slate-700 mb-4">Progresso Geral das Metas</h3>
                     <div id="db-goals-progress" class="space-y-4"></div>
                 </div>
             </section>
             
             <section id="day" class="page">
-                 <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-3xl font-bold text-slate-800">📅 Visão do Dia</h2>
-                    <button id="add-day-task-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">Adicionar Tarefa</button>
+                    <button id="add-day-task-btn" class="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">Adicionar Tarefa</button>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
@@ -126,17 +171,17 @@
             </section>
             
             <section id="week" class="page">
-                 <h2 class="text-3xl font-bold text-slate-800 mb-6">📆 Visão da Semana</h2>
-                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6">📆 Visão da Semana</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-white p-6 rounded-lg shadow-sm">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-semibold text-slate-700">Objetivos da Semana</h3>
-                             <button id="add-week-goal-btn" class="bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar</button>
+                            <button id="add-week-goal-btn" class="bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar</button>
                         </div>
-                         <ul id="week-goals-list" class="space-y-2 list-disc list-inside text-slate-700"></ul>
+                        <ul id="week-goals-list" class="space-y-2 list-disc list-inside text-slate-700"></ul>
                     </div>
                     <div class="bg-white p-6 rounded-lg shadow-sm">
-                         <div class="flex justify-between items-center mb-4">
+                        <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-semibold text-slate-700">Checklist de Hábitos</h3>
                             <button id="add-habit-btn" class="bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar</button>
                         </div>
@@ -146,54 +191,54 @@
             </section>
 
             <section id="month" class="page">
-                 <h2 class="text-3xl font-bold text-slate-800 mb-6">📅 Visão do Mês</h2>
+                <h2 class="text-3xl font-bold text-slate-800 mb-6">📅 Visão do Mês</h2>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="text-xl font-semibold text-slate-700 mb-4">Calendário - Setembro 2025</h3>
-                        <div class="grid grid-cols-7 gap-1 text-center" id="calendar-grid">
-                            </div>
+                        <div class="grid grid-cols-7 gap-1 text-center" id="calendar-grid"></div>
                     </div>
                     <div class="space-y-6">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
-                             <div class="flex justify-between items-center mb-3">
-                                 <h3 class="text-xl font-semibold text-slate-700">Resumo de Conquistas</h3>
-                                 <button id="add-achievement-btn" class="bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar</button>
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-xl font-semibold text-slate-700">Resumo de Conquistas</h3>
+                                <button id="add-achievement-btn" class="bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar</button>
                             </div>
-                            <ul id="achievements-list" class="space-y-2 list-disc list-inside text-slate-600">
-                            </ul>
+                            <ul id="achievements-list" class="space-y-2 list-disc list-inside text-slate-600"></ul>
                         </div>
-                         <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
                             <h3 class="text-xl font-semibold text-slate-700 mb-2">Produtividade</h3>
-                             <p id="month-tasks-completed" class="text-4xl font-bold text-indigo-600">0</p>
-                             <p class="text-slate-500">tarefas concluídas este mês.</p>
+                            <p id="month-tasks-completed" class="text-4xl font-bold text-indigo-600">0</p>
+                            <p class="text-slate-500">tarefas concluídas este mês.</p>
                         </div>
                     </div>
                 </div>
             </section>
 
             <section id="finance" class="page">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-3xl font-bold text-slate-800">💰 Finanças</h2>
-                    <div class="flex gap-2">
-                        <button id="add-expense-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition">Nova Despesa</button>
-                        <button id="add-income-btn" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-600 transition">Nova Receita</button>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button id="add-expense-btn" class="w-1/2 sm:w-auto bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition">Nova Despesa</button>
+                        <button id="add-income-btn" class="w-1/2 sm:w-auto bg-emerald-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-600 transition">Nova Receita</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 space-y-6">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <h3 class="text-xl font-semibold text-slate-700 mb-4">Últimas Transações</h3>
-                            <table class="w-full text-left">
-                                <thead>
-                                    <tr class="border-b">
-                                        <th class="py-2">Descrição</th>
-                                        <th class="py-2">Categoria</th>
-                                        <th class="py-2 text-right">Valor</th>
-                                        <th class="py-2 text-center">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="transactions-table-body"></tbody>
-                            </table>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left min-w-[500px]">
+                                    <thead>
+                                        <tr class="border-b">
+                                            <th class="py-2">Descrição</th>
+                                            <th class="py-2">Categoria</th>
+                                            <th class="py-2 text-right">Valor</th>
+                                            <th class="py-2 text-center">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="transactions-table-body"></tbody>
+                                </table>
+                            </div>
                         </div>
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <h3 class="text-xl font-semibold text-slate-700 mb-4">Gastos por Categoria</h3>
@@ -207,8 +252,8 @@
                         </div>
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <h3 class="text-slate-500 font-medium">Projeção para o Mês</h3>
-                             <p class="text-3xl font-bold text-sky-500 mt-2">~ R$ 0,00</p>
-                             <p class="text-slate-500 mt-1">saldo restante estimado</p>
+                            <p class="text-3xl font-bold text-sky-500 mt-2">~ R$ 0,00</p>
+                            <p class="text-slate-500 mt-1">saldo restante estimado</p>
                         </div>
                     </div>
                 </div>
@@ -242,9 +287,9 @@
             </section>
 
             <section id="todo" class="page">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-3xl font-bold text-slate-800">✅ A Fazer</h2>
-                    <button id="add-todo-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">Adicionar Tarefa</button>
+                    <button id="add-todo-btn" class="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">Adicionar Tarefa</button>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-sm overflow-x-auto">
                     <table class="w-full text-left min-w-[600px]">
@@ -262,14 +307,12 @@
             </section>
 
             <section id="goals" class="page">
-                 <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-3xl font-bold text-slate-800">🎯 Metas</h2>
-                    <button id="add-goal-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">Adicionar Meta</button>
+                    <button id="add-goal-btn" class="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">Adicionar Meta</button>
                 </div>
-                <div id="goals-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    </div>
+                <div id="goals-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
             </section>
-
         </main>
     </div>
 
@@ -288,125 +331,434 @@
         </div>
     </div>
 
-
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
+        // ===================================================================
+        // 1. UTILS E FUNÇÕES AUXILIARES
+        // ===================================================================
+        const $ = (selector) => document.querySelector(selector);
+        const $$ = (selector) => document.querySelectorAll(selector);
+        const formatCurrency = (value) => (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-            // --- NOVO: Funções de Persistência com localStorage ---
-            const APP_STATE_KEY = 'dayle-app-state';
+        // ===================================================================
+        // 2. LÓGICA DO MENU RESPONSIVO (HAMBÚRGUER)
+        // ===================================================================
+        const menuContainer = $('#menu-container');
+        const openMenuBtn = $('#open-menu-btn');
+        const closeMenuBtn = $('#close-menu-btn');
+        const menuOverlay = $('#menu-overlay');
 
-            function saveState(newState) {
-                localStorage.setItem(APP_STATE_KEY, JSON.stringify(newState));
+        function toggleMenu(show) {
+            menuContainer.classList.toggle('menu-open', show);
+            menuOverlay.classList.toggle('hidden', !show);
+        }
+
+        // ===================================================================
+        // 3. ESTADO DA APLICAÇÃO E LÓGICA DE PERFIS
+        // ===================================================================
+        const PROFILES_KEY = 'dayle-profiles';
+        const PROFILE_DATA_KEY_PREFIX = 'dayle-data-';
+        let profilesState = { profiles: [], currentProfileId: null };
+        const defaultState = {
+            dayTasks: [], dayHighlights: [], notepadContent: '', weekGoals: [], habits: [],
+            monthAchievements: [], transactions: [], shoppingList: [], todos: [], goals: [],
+        };
+        let state;
+
+        function loadProfiles() {
+            const savedProfiles = localStorage.getItem(PROFILES_KEY);
+            if (savedProfiles) {
+                profilesState = JSON.parse(savedProfiles);
+            } else {
+                const firstProfileId = crypto.randomUUID();
+                profilesState = {
+                    profiles: [{ id: firstProfileId, name: 'Padrão' }],
+                    currentProfileId: firstProfileId,
+                };
+                saveProfiles();
             }
+        }
 
-            function loadState() {
-                const savedState = localStorage.getItem(APP_STATE_KEY);
-                try {
-                    return savedState ? JSON.parse(savedState) : null;
-                } catch (error) {
-                    console.error("Erro ao carregar o estado do localStorage:", error);
-                    return null;
+        function saveProfiles() {
+            localStorage.setItem(PROFILES_KEY, JSON.stringify(profilesState));
+        }
+        
+        function loadProfileData(profileId) {
+            const savedState = localStorage.getItem(`${PROFILE_DATA_KEY_PREFIX}${profileId}`);
+            try { return savedState ? JSON.parse(savedState) : null; } 
+            catch (error) { console.error("Erro ao carregar dados do perfil:", error); return null; }
+        }
+
+        function saveCurrentProfileData() {
+            if (profilesState.currentProfileId) {
+                localStorage.setItem(`${PROFILE_DATA_KEY_PREFIX}${profilesState.currentProfileId}`, JSON.stringify(state));
+            }
+        }
+        
+        function switchProfile(profileId) {
+            profilesState.currentProfileId = profileId;
+            saveProfiles();
+            state = loadProfileData(profileId) || { ...defaultState };
+            commitChanges();
+        }
+
+        function addProfile() {
+            const name = prompt("Digite o nome do novo perfil:");
+            if (name && name.trim() !== '') {
+                const newProfile = { id: crypto.randomUUID(), name: name.trim() };
+                profilesState.profiles.push(newProfile);
+                switchProfile(newProfile.id);
+            }
+        }
+
+        function deleteProfile() {
+            if (profilesState.profiles.length <= 1) {
+                alert("Não é possível excluir o único perfil existente.");
+                return;
+            }
+            const currentProfile = profilesState.profiles.find(p => p.id === profilesState.currentProfileId);
+            if (confirm(`Tem certeza que deseja excluir o perfil "${currentProfile.name}"? Todos os dados serão perdidos.`)) {
+                localStorage.removeItem(`${PROFILE_DATA_KEY_PREFIX}${profilesState.currentProfileId}`);
+                profilesState.profiles = profilesState.profiles.filter(p => p.id !== profilesState.currentProfileId);
+                const newCurrentId = profilesState.profiles[0].id;
+                switchProfile(newCurrentId);
+            }
+        }
+
+        function commitChanges() {
+            renderAll();
+            saveCurrentProfileData();
+        }
+
+        // ===================================================================
+        // 4. LÓGICA DO MODAL
+        // ===================================================================
+        const modal = $('#modal');
+        const modalBackdrop = $('#modal-backdrop');
+        const modalContent = $('#modal-content');
+        const modalTitle = $('#modal-title');
+        const modalForm = $('#modal-form');
+        const modalCancelBtn = $('#modal-cancel');
+        const modalSaveBtn = $('#modal-save');
+        const modalCloseBtn = $('#modal-close');
+        let onSaveCallback = null;
+
+        function openModal(title, formHtml, onSave, item = {}) {
+            modalTitle.textContent = title;
+            modalForm.innerHTML = formHtml;
+            onSaveCallback = onSave;
+            Object.keys(item).forEach(key => {
+                const input = modalForm.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === 'checkbox') { input.checked = item[key]; } 
+                    else { input.value = item[key]; }
                 }
+            });
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modalBackdrop.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            modalBackdrop.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                modalForm.innerHTML = '';
+                onSaveCallback = null;
+            }, 300);
+        }
+
+        // ===================================================================
+        // 5. LÓGICA DE NAVEGAÇÃO ENTRE PÁGINAS
+        // ===================================================================
+        const navLinks = $$('.nav-link');
+        const pages = $$('.page');
+        const navMenu = $('#nav-menu');
+        let expensesChartInstance = null;
+        
+        function showPage(targetId) {
+            navLinks.forEach(link => {
+                link.classList.toggle('bg-indigo-600', link.getAttribute('href') === targetId);
+                link.classList.toggle('text-white', link.getAttribute('href') === targetId);
+                link.classList.toggle('text-slate-300', link.getAttribute('href') !== targetId);
+            });
+            pages.forEach(page => page.classList.toggle('active', `#${page.id}` === targetId));
+            window.history.pushState(null, '', targetId);
+            if (targetId === '#finance') renderExpensesChart();
+            if (targetId === '#dashboard') updateDashboard();
+        }
+        
+        // ===================================================================
+        // 6. FUNÇÕES DE RENDERIZAÇÃO
+        // ===================================================================
+        function renderAll() {
+            renderProfiles();
+            renderDayTasks();
+            renderDayHighlights();
+            renderNotepad();
+            renderWeekGoals();
+            renderHabits();
+            renderMonthAchievements();
+            renderTransactions();
+            renderShoppingList();
+            renderTodos();
+            renderGoals();
+            updateDashboard();
+            renderCalendar();
+        }
+        
+        function renderProfiles() {
+            const list = $('#profile-list');
+            list.innerHTML = profilesState.profiles.map(profile => `
+                <li>
+                    <a href="#" data-id="${profile.id}" class="profile-link flex items-center w-full text-left px-3 py-1.5 text-sm rounded transition-colors ${profile.id === profilesState.currentProfileId ? 'bg-indigo-600 text-white font-semibold' : 'text-slate-300 hover:bg-slate-700'}">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 flex-shrink-0"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                       <span class="truncate">${profile.name}</span>
+                    </a>
+                </li>
+            `).join('');
+        }
+        
+        function updateDashboard() {
+            const pendingTasks = state.dayTasks.filter(t => !t.completed).length;
+            const totalTasks = state.dayTasks.length;
+            $('#db-tasks').innerHTML = `${pendingTasks} <span class="text-2xl text-slate-400 font-medium">/ ${totalTasks}</span>`;
+            const balance = state.transactions.reduce((acc, t) => acc + (t.type === 'income' ? t.amount : -t.amount), 0);
+            $('#db-balance').textContent = formatCurrency(balance);
+            const goalsInProgress = state.goals.filter(g => g.current < g.target).length;
+            $('#db-goals').textContent = goalsInProgress;
+            const shoppingItems = state.shoppingList.filter(i => !i.completed).slice(0, 3);
+            $('#db-shopping').innerHTML = shoppingItems.map(i => `<li>- ${i.text}</li>`).join('') || '<li class="text-slate-400">Nenhum item.</li>';
+            $('#db-goals-progress').innerHTML = state.goals.map(goal => {
+                const percentage = goal.target > 0 ? Math.round((goal.current / goal.target) * 100) : 0;
+                return `
+                    <div>
+                        <div class="flex justify-between mb-1"><span class="text-slate-700 text-sm">${goal.text}</span><span class="text-slate-500 text-sm">${percentage}%</span></div>
+                        <div class="w-full bg-slate-200 rounded-full h-2"><div class="bg-indigo-600 h-2 rounded-full" style="width: ${percentage}%"></div></div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderDayTasks() {
+            const list = $('#day-tasks-list');
+            list.innerHTML = state.dayTasks.map(task => `
+                <li class="flex items-center justify-between group">
+                    <div class="flex items-center">
+                        <input type="checkbox" data-id="${task.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 day-task-check" ${task.completed ? 'checked' : ''}> 
+                        <span class="ml-3 ${task.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${task.text}</span>
+                    </div>
+                    <div class="hidden group-hover:flex gap-2">
+                        <button data-id="${task.id}" class="edit-day-task-btn text-slate-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
+                        <button data-id="${task.id}" class="delete-day-task-btn text-slate-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    </div>
+                </li>
+            `).join('');
+            if (state.dayTasks.length === 0) {
+                list.innerHTML = `<li class="text-slate-400">Nenhuma tarefa para hoje.</li>`;
             }
-
-            // --- App state ---
-            // NOVO: O estado agora é carregado do localStorage ou usa o padrão
-            const defaultState = {
-                dayTasks: [
-                    { id: crypto.randomUUID(), text: 'Reunião de equipe às 08:00', completed: true },
-                    { id: crypto.randomUUID(), text: 'Finalizar relatório X', completed: false },
-                ],
-                dayHighlights: [
-                    { id: crypto.randomUUID(), text: 'Entregar o protótipo do novo app.' },
-                ],
-                notepadContent: 'Anotação rápida de exemplo.',
-                weekGoals: [
-                    { id: crypto.randomUUID(), text: 'Concluir o módulo 2 do curso de React.' },
-                ],
-                habits: [
-                    { id: crypto.randomUUID(), text: 'Beber 2L de água', completed: true },
-                    { id: crypto.randomUUID(), text: 'Ler 15 páginas', completed: false },
-                ],
-                monthAchievements: [
-                    { id: crypto.randomUUID(), text: 'Projeto freelance finalizado!' },
-                ],
-                transactions: [
-                    { id: crypto.randomUUID(), description: 'Salário', category: 'Receita', amount: 3500, type: 'income' },
-                    { id: crypto.randomUUID(), description: 'Aluguel', category: 'Moradia', amount: 1200, type: 'expense' },
-                ],
-                shoppingList: [
-                    { id: crypto.randomUUID(), text: 'Arroz', category: 'mercado', completed: true },
-                    { id: crypto.randomUUID(), text: 'Mouse sem fio', category: 'tecnologia', completed: false },
-                ],
-                todos: [
-                    { id: crypto.randomUUID(), text: 'Revisar o design do novo site', priority: 'alta', status: 'andamento' },
-                    { id: crypto.randomUUID(), text: 'Comprar passagens para viagem', priority: 'media', status: 'pendente' },
-                ],
-                goals: [
-                    { id: crypto.randomUUID(), text: 'Guardar R$ 5.000 para emergência', category: 'Financeira', current: 3000, target: 5000, unit: 'R$' },
-                    { id: crypto.randomUUID(), text: 'Completar curso de JS Avançado', category: 'Estudos', current: 80, target: 100, unit: '%' },
-                ],
-            };
-
-            let state = loadState() || defaultState;
-
-            // --- UTILS ---
-            const $ = (selector) => document.querySelector(selector);
-            const $$ = (selector) => document.querySelectorAll(selector);
-            const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            
-            // --- NOVO: Função para salvar e renderizar ---
-            function commitChanges() {
-                renderAll();
-                saveState(state);
+        }
+        
+        function renderDayHighlights() {
+            const list = $('#highlights-list');
+            list.innerHTML = state.dayHighlights.map(highlight => `
+                <li class="group flex justify-between items-center bg-amber-100 text-amber-800 p-3 rounded-md">
+                    <span class="break-all">${highlight.text}</span>
+                    <div class="hidden group-hover:flex gap-2 flex-shrink-0 ml-2">
+                        <button data-id="${highlight.id}" class="edit-highlight-btn text-amber-700 hover:text-amber-900"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
+                        <button data-id="${highlight.id}" class="delete-highlight-btn text-amber-700 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    </div>
+                </li>
+            `).join('');
+            if (state.dayHighlights.length === 0) {
+                list.innerHTML = `<li class="text-slate-400">Nenhum destaque para hoje.</li>`;
             }
+        }
+        
+        function renderNotepad() {
+            $('#notepad').value = state.notepadContent || '';
+        }
 
-            // --- MODAL (sem alterações) ---
-            const modal = $('#modal');
-            const modalBackdrop = $('#modal-backdrop');
-            const modalContent = $('#modal-content');
-            const modalTitle = $('#modal-title');
-            const modalForm = $('#modal-form');
-            const modalCancelBtn = $('#modal-cancel');
-            const modalSaveBtn = $('#modal-save');
-            const modalCloseBtn = $('#modal-close');
-            let onSaveCallback = null;
+        function renderWeekGoals() {
+            const list = $('#week-goals-list');
+            list.innerHTML = state.weekGoals.map(goal => `<li class="flex justify-between items-center group"><span>${goal.text}</span><div class="hidden group-hover:flex gap-2"><button data-id="${goal.id}" class="edit-week-goal-btn text-slate-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${goal.id}" class="delete-week-goal-btn text-slate-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
+            if (state.weekGoals.length === 0) list.innerHTML = `<li class="text-slate-400">Nenhum objetivo definido.</li>`;
+        }
+        
+        function renderHabits() {
+            const list = $('#habits-list');
+            list.innerHTML = state.habits.map(habit => `<li class="flex items-center justify-between group"><div class="flex items-center"><input type="checkbox" data-id="${habit.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 habit-check" ${habit.completed ? 'checked' : ''}><span class="ml-3 ${habit.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${habit.text}</span></div><div class="hidden group-hover:flex gap-2"><button data-id="${habit.id}" class="edit-habit-btn text-slate-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${habit.id}" class="delete-habit-btn text-slate-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
+            if (state.habits.length === 0) list.innerHTML = `<li class="text-slate-400">Nenhum hábito adicionado.</li>`;
+        }
 
-            function openModal(title, formHtml, onSave, item = {}) {
-                modalTitle.textContent = title;
-                modalForm.innerHTML = formHtml;
-                onSaveCallback = onSave;
-
-                Object.keys(item).forEach(key => {
-                    const input = modalForm.querySelector(`[name="${key}"]`);
-                    if (input) {
-                        if (input.type === 'checkbox') {
-                           input.checked = item[key];
-                        } else {
-                           input.value = item[key];
-                        }
-                    }
-                });
-
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                setTimeout(() => {
-                    modalBackdrop.classList.remove('opacity-0');
-                    modalContent.classList.remove('scale-95');
-                }, 10);
+        function renderMonthAchievements() {
+            const list = $('#achievements-list');
+            list.innerHTML = state.monthAchievements.map(achievement => `
+                <li class="group flex justify-between items-center">
+                    <span>${achievement.text}</span>
+                    <div class="hidden group-hover:flex gap-2">
+                        <button data-id="${achievement.id}" class="edit-achievement-btn text-slate-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
+                        <button data-id="${achievement.id}" class="delete-achievement-btn text-slate-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    </div>
+                </li>
+            `).join('');
+            if (state.monthAchievements.length === 0) {
+                list.innerHTML = `<li class="text-slate-400">Nenhuma conquista registrada.</li>`;
             }
+        }
 
-            function closeModal() {
-                modalBackdrop.classList.add('opacity-0');
-                modalContent.classList.add('scale-95');
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                    modalForm.innerHTML = '';
-                    onSaveCallback = null;
-                }, 300);
+        function renderCalendar() {
+            const grid = $('#calendar-grid');
+            const days = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
+            grid.innerHTML = days.map(d => `<div class="font-semibold text-slate-500 text-sm">${d}</div>`).join('');
+            const today = new Date().getDate();
+            for (let i = 1; i <= 30; i++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'p-2 rounded-md';
+                dayEl.textContent = i;
+                if (i === today) dayEl.classList.add('bg-indigo-600', 'text-white', 'font-bold');
+                grid.appendChild(dayEl);
             }
+        }
 
+        function renderTransactions() {
+            const body = $('#transactions-table-body');
+            body.innerHTML = state.transactions.map(t => `
+                <tr class="border-b">
+                    <td class="py-3 px-1">${t.description}</td>
+                    <td class="px-1">${t.category}</td>
+                    <td class="text-right px-1 ${t.type === 'income' ? 'text-emerald-600' : 'text-red-600'}">${t.type === 'income' ? '+' : '-'} ${formatCurrency(t.amount)}</td>
+                    <td class="text-center px-1">
+                        <button data-id="${t.id}" class="edit-transaction-btn text-slate-400 hover:text-indigo-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
+                        <button data-id="${t.id}" class="delete-transaction-btn text-slate-400 hover:text-red-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    </td>
+                </tr>
+            `).join('');
+            const balance = state.transactions.reduce((acc, t) => acc + (t.type === 'income' ? t.amount : -t.amount), 0);
+            $('#finance-balance').textContent = formatCurrency(balance);
+            renderExpensesChart();
+        }
+
+        function renderExpensesChart() {
+            const ctx = document.getElementById('expensesChart');
+            if (!ctx) return;
+            if (expensesChartInstance) expensesChartInstance.destroy();
+            const expenseData = state.transactions
+                .filter(t => t.type === 'expense')
+                .reduce((acc, t) => {
+                    acc[t.category] = (acc[t.category] || 0) + t.amount;
+                    return acc;
+                }, {});
+            expensesChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(expenseData),
+                    datasets: [{
+                        data: Object.values(expenseData),
+                        backgroundColor: ['rgba(79, 70, 229, 0.8)','rgba(245, 158, 11, 0.8)','rgba(14, 165, 233, 0.8)','rgba(239, 68, 68, 0.8)'],
+                        borderColor: '#fff',
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        function renderShoppingList() {
+            ['mercado', 'tecnologia', 'lazer'].forEach(category => {
+                const list = $(`#shopping-list-${category}`);
+                const items = state.shoppingList.filter(item => item.category === category);
+                list.innerHTML = items.map(item => `
+                    <li class="flex items-center justify-between group">
+                        <div class="flex items-center">
+                            <input type="checkbox" data-id="${item.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 shopping-item-check" ${item.completed ? 'checked' : ''}>
+                            <span class="ml-3 ${item.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${item.text}</span>
+                        </div>
+                        <div class="hidden group-hover:flex gap-2">
+                            <button data-id="${item.id}" class="edit-shopping-item-btn text-slate-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
+                            <button data-id="${item.id}" class="delete-shopping-item-btn text-slate-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        </div>
+                    </li>
+                `).join('');
+                if (items.length === 0) list.innerHTML = `<li class="text-slate-400">Nenhum item.</li>`;
+            });
+        }
+        
+        function renderTodos() {
+            const body = $('#todo-table-body');
+            const priorityMap = { alta: 'bg-red-100 text-red-800', media: 'bg-amber-100 text-amber-800', baixa: 'bg-green-100 text-green-800' };
+            const statusMap = { pendente: 'bg-slate-100 text-slate-800', andamento: 'bg-sky-100 text-sky-800', concluido: 'bg-emerald-100 text-emerald-800' };
+            body.innerHTML = state.todos.map(todo => `
+                <tr class="border-b">
+                    <td class="py-4 px-1 ${todo.status === 'concluido' ? 'line-through text-slate-500' : ''}">${todo.text}</td>
+                    <td class="px-1"><span class="px-2 py-1 text-xs font-semibold rounded-full ${priorityMap[todo.priority]}">${todo.priority}</span></td>
+                    <td class="px-1"><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusMap[todo.status]}">${todo.status}</span></td>
+                    <td class="text-center px-1">
+                        <button data-id="${todo.id}" class="edit-todo-btn text-slate-400 hover:text-indigo-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
+                        <button data-id="${todo.id}" class="delete-todo-btn text-slate-400 hover:text-red-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function renderGoals() {
+            const list = $('#goals-list');
+            const categoryColors = { Financeira: 'bg-indigo-600', Saúde: 'bg-emerald-500', Estudos: 'bg-amber-500', Pessoal: 'bg-sky-500' };
+            list.innerHTML = state.goals.map(goal => {
+                const percentage = goal.target > 0 ? Math.round((goal.current / goal.target) * 100) : 0;
+                return `
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-semibold text-slate-700">${goal.category}</h3>
+                                <p class="text-slate-600 mt-1">${goal.text}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button data-id="${goal.id}" class="edit-goal-btn text-slate-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
+                                <button data-id="${goal.id}" class="delete-goal-btn text-slate-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-1"><span class="text-slate-700">${goal.unit === 'R$' ? formatCurrency(goal.current) : goal.current} / ${goal.unit === 'R$' ? formatCurrency(goal.target) : goal.target} ${goal.unit !== '%' && goal.unit !== 'R$' ? goal.unit : ''}</span><span class="text-slate-500">${percentage}%</span></div>
+                            <div class="w-full bg-slate-200 rounded-full h-2.5"><div class="${categoryColors[goal.category] || 'bg-slate-500'} h-2.5 rounded-full" style="width: ${percentage}%"></div></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ===================================================================
+        // 7. SETUP DE EVENTOS E INICIALIZAÇÃO
+        // ===================================================================
+        function setupEventListeners() {
+            // Menu Hambúrguer
+            openMenuBtn.addEventListener('click', () => toggleMenu(true));
+            closeMenuBtn.addEventListener('click', () => toggleMenu(false));
+            menuOverlay.addEventListener('click', () => toggleMenu(false));
+
+            // Perfis
+            $('#add-profile-btn').addEventListener('click', addProfile);
+            $('#delete-profile-btn').addEventListener('click', deleteProfile);
+            $('#profile-list').addEventListener('click', (e) => {
+                const link = e.target.closest('a.profile-link');
+                if(link) { e.preventDefault(); switchProfile(link.dataset.id); }
+            });
+
+            // Navegação
+            navMenu.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (link) {
+                    e.preventDefault();
+                    showPage(link.getAttribute('href'));
+                    if (window.innerWidth <= 768) { toggleMenu(false); }
+                }
+            });
+
+            // Modal
             modalSaveBtn.addEventListener('click', () => {
                 const formData = new FormData(modalForm);
                 const data = {};
@@ -416,535 +768,257 @@
                     else if (input.type === 'checkbox') data[key] = input.checked;
                     else data[key] = value;
                 }
-                if (onSaveCallback) {
-                    onSaveCallback(data);
-                }
+                if (onSaveCallback) onSaveCallback(data);
             });
-
             [modalBackdrop, modalCancelBtn, modalCloseBtn].forEach(el => el.addEventListener('click', closeModal));
 
-
-            // --- NAVIGATION (sem alterações) ---
-            const navLinks = $$('.nav-link');
-            const pages = $$('.page');
-            const navMenu = $('#nav-menu');
-            let expensesChartInstance = null;
-            
-            function showPage(targetId) {
-                navLinks.forEach(link => {
-                    link.classList.toggle('bg-indigo-600', link.getAttribute('href') === targetId);
-                    link.classList.toggle('text-white', link.getAttribute('href') === targetId);
-                    link.classList.toggle('text-slate-300', link.getAttribute('href') !== targetId);
-                });
-                pages.forEach(page => page.classList.toggle('active', `#${page.id}` === targetId));
-                window.history.pushState(null, '', targetId);
-
-                if (targetId === '#finance') renderExpensesChart();
-                if (targetId === '#dashboard') updateDashboard();
-            }
-
-            navMenu.addEventListener('click', (e) => {
-                const link = e.target.closest('a');
-                if (link) {
-                    e.preventDefault();
-                    showPage(link.getAttribute('href'));
-                }
-            });
-
-            // --- RENDER FUNCTIONS (pequenas alterações) ---
-            function renderAll() {
-                renderDayTasks();
-                renderDayHighlights();
-                renderNotepad(); // Adicionado
-                renderWeekGoals();
-                renderHabits();
-                renderMonthAchievements();
-                renderTransactions();
-                renderShoppingList();
-                renderTodos();
-                renderGoals();
-                updateDashboard();
-                renderCalendar();
-            }
-
-            function updateDashboard() {
-                const pendingTasks = state.dayTasks.filter(t => !t.completed).length;
-                const totalTasks = state.dayTasks.length;
-                $('#db-tasks').innerHTML = `${pendingTasks} <span class="text-2xl text-slate-400 font-medium">/ ${totalTasks}</span>`;
-
-                const balance = state.transactions.reduce((acc, t) => acc + (t.type === 'income' ? t.amount : -t.amount), 0);
-                $('#db-balance').textContent = formatCurrency(balance);
-                
-                const goalsInProgress = state.goals.filter(g => g.current < g.target).length;
-                $('#db-goals').textContent = goalsInProgress;
-
-                const shoppingItems = state.shoppingList.filter(i => !i.completed).slice(0, 3);
-                $('#db-shopping').innerHTML = shoppingItems.map(i => `<li>- ${i.text}</li>`).join('') || '<li class="text-slate-400">Nenhum item.</li>';
-
-                $('#db-goals-progress').innerHTML = state.goals.map(goal => {
-                    const percentage = goal.target > 0 ? Math.round((goal.current / goal.target) * 100) : 0;
-                    return `
-                        <div>
-                            <div class="flex justify-between mb-1"><span class="text-slate-700 text-sm">${goal.text}</span><span class="text-slate-500 text-sm">${percentage}%</span></div>
-                            <div class="w-full bg-slate-200 rounded-full h-2"><div class="bg-indigo-600 h-2 rounded-full" style="width: ${percentage}%"></div></div>
-                        </div>
-                    `;
-                }).join('');
-            }
-            
-            function renderDayTasks() {
-                const list = $('#day-tasks-list');
-                list.innerHTML = state.dayTasks.map(task => `
-                    <li class="flex items-center justify-between group">
-                        <div class="flex items-center">
-                            <input type="checkbox" data-id="${task.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 day-task-check" ${task.completed ? 'checked' : ''}> 
-                            <span class="ml-3 ${task.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${task.text}</span>
-                        </div>
-                        <div class="hidden group-hover:flex gap-2">
-                             <button data-id="${task.id}" class="edit-day-task-btn text-slate-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
-                            <button data-id="${task.id}" class="delete-day-task-btn text-slate-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                        </div>
-                    </li>
-                `).join('');
-                if (state.dayTasks.length === 0) {
-                    list.innerHTML = `<li class="text-slate-400">Nenhuma tarefa para hoje.</li>`;
-                }
-            }
-            
-            function renderDayHighlights() {
-                const list = $('#highlights-list');
-                list.innerHTML = state.dayHighlights.map(highlight => `
-                    <li class="group flex justify-between items-center bg-amber-100 text-amber-800 p-3 rounded-md">
-                        <span class="break-all">${highlight.text}</span>
-                        <div class="hidden group-hover:flex gap-2 flex-shrink-0 ml-2">
-                             <button data-id="${highlight.id}" class="edit-highlight-btn text-amber-700 hover:text-amber-900"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
-                            <button data-id="${highlight.id}" class="delete-highlight-btn text-amber-700 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                        </div>
-                    </li>
-                `).join('');
-                if (state.dayHighlights.length === 0) {
-                    list.innerHTML = `<li class="text-slate-400">Nenhum destaque para hoje.</li>`;
-                }
-            }
-            
-            // NOVO: Renderiza e gerencia o Bloco de Notas
-            function renderNotepad() {
-                $('#notepad').value = state.notepadContent || '';
-            }
+            // Bloco de Notas
             $('#notepad').addEventListener('input', (e) => {
                 state.notepadContent = e.target.value;
-                saveState(state); // Salva a cada digitação
+                saveCurrentProfileData(); 
             });
 
-            // Restante das funções de renderização (sem alterações significativas)
-            function renderWeekGoals() {
-                 const list = $('#week-goals-list');
-                 list.innerHTML = state.weekGoals.map(goal => `<li class="flex justify-between items-center group"><span>${goal.text}</span><div class="hidden group-hover:flex gap-2"><button data-id="${goal.id}" class="edit-week-goal-btn text-slate-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${goal.id}" class="delete-week-goal-btn text-slate-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
-                 if (state.weekGoals.length === 0) list.innerHTML = `<li class="text-slate-400">Nenhum objetivo definido.</li>`;
-            }
-            
-            function renderHabits() {
-                const list = $('#habits-list');
-                list.innerHTML = state.habits.map(habit => `<li class="flex items-center justify-between group"><div class="flex items-center"><input type="checkbox" data-id="${habit.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 habit-check" ${habit.completed ? 'checked' : ''}><span class="ml-3 ${habit.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${habit.text}</span></div><div class="hidden group-hover:flex gap-2"><button data-id="${habit.id}" class="edit-habit-btn text-slate-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${habit.id}" class="delete-habit-btn text-slate-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
-                 if (state.habits.length === 0) list.innerHTML = `<li class="text-slate-400">Nenhum hábito adicionado.</li>`;
-            }
-
-            function renderMonthAchievements() {
-                const list = $('#achievements-list');
-                list.innerHTML = state.monthAchievements.map(achievement => `
-                     <li class="group flex justify-between items-center">
-                        <span>${achievement.text}</span>
-                        <div class="hidden group-hover:flex gap-2">
-                             <button data-id="${achievement.id}" class="edit-achievement-btn text-slate-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
-                            <button data-id="${achievement.id}" class="delete-achievement-btn text-slate-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                        </div>
-                    </li>
-                `).join('');
-                if (state.monthAchievements.length === 0) {
-                    list.innerHTML = `<li class="text-slate-400">Nenhuma conquista registrada.</li>`;
+            // Day Tasks & Highlights
+            $('#add-day-task-btn').addEventListener('click', () => {
+                openModal('Nova Tarefa do Dia', `<input type="text" name="text" placeholder="Descrição da tarefa" class="w-full p-2 border rounded">`, (data) => {
+                    state.dayTasks.push({ id: crypto.randomUUID(), text: data.text, completed: false });
+                    closeModal(); commitChanges();
+                });
+            });
+            $('#add-highlight-btn').addEventListener('click', () => {
+                openModal('Novo Destaque do Dia', `<input type="text" name="text" placeholder="Descrição do destaque" class="w-full p-2 border rounded">`, (data) => {
+                    state.dayHighlights.push({ id: crypto.randomUUID(), text: data.text });
+                    closeModal(); commitChanges();
+                });
+            });
+            $('#day').addEventListener('click', (e) => {
+                const button = e.target.closest('button, input');
+                if (!button) return;
+                const id = button.dataset.id;
+                if (!id) return;
+                if (button.matches('.edit-day-task-btn')) {
+                    const task = state.dayTasks.find(t => t.id === id);
+                    openModal('Editar Tarefa', `<input type="text" name="text" value="${task.text}" class="w-full p-2 border rounded">`, (data) => {
+                        task.text = data.text;
+                        closeModal(); commitChanges();
+                    });
+                } else if (button.matches('.delete-day-task-btn')) {
+                    state.dayTasks = state.dayTasks.filter(t => t.id !== id);
+                    commitChanges();
+                } else if (button.matches('.day-task-check')) {
+                    const task = state.dayTasks.find(t => t.id === id);
+                    task.completed = button.checked;
+                    commitChanges();
+                } else if (button.matches('.edit-highlight-btn')) {
+                    const highlight = state.dayHighlights.find(h => h.id === id);
+                    openModal('Editar Destaque', `<input type="text" name="text" value="${highlight.text}" class="w-full p-2 border rounded">`, (data) => {
+                        highlight.text = data.text;
+                        closeModal(); commitChanges();
+                    });
+                } else if (button.matches('.delete-highlight-btn')) {
+                    state.dayHighlights = state.dayHighlights.filter(h => h.id !== id);
+                    commitChanges();
                 }
-            }
+            });
 
-            function renderCalendar() {
-                const grid = $('#calendar-grid');
-                const days = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
-                grid.innerHTML = days.map(d => `<div class="font-semibold text-slate-500 text-sm">${d}</div>`).join('');
-                const today = new Date().getDate(); // Pega o dia atual
-                for (let i = 1; i <= 30; i++) {
-                    const dayEl = document.createElement('div');
-                    dayEl.className = 'p-2 rounded-md';
-                    dayEl.textContent = i;
-                    if (i === today) dayEl.classList.add('bg-indigo-600', 'text-white', 'font-bold');
-                    grid.appendChild(dayEl);
+            // Week Goals
+            $('#add-week-goal-btn').addEventListener('click', () => {
+                openModal('Novo Objetivo Semanal', `<input type="text" name="text" placeholder="Descrição do objetivo" class="w-full p-2 border rounded">`, (data) => {
+                    state.weekGoals.push({ id: crypto.randomUUID(), text: data.text });
+                    closeModal(); commitChanges();
+                });
+            });
+            $('#week-goals-list').addEventListener('click', (e) => {
+                const id = e.target.closest('button')?.dataset.id;
+                if (!id) return;
+                const goal = state.weekGoals.find(g => g.id === id);
+                if (e.target.closest('.edit-week-goal-btn')) {
+                    openModal('Editar Objetivo', `<input type="text" name="text" value="${goal.text}" class="w-full p-2 border rounded">`, data => {
+                        goal.text = data.text;
+                        closeModal(); commitChanges();
+                    });
                 }
-            }
+                if (e.target.closest('.delete-week-goal-btn')) {
+                    state.weekGoals = state.weekGoals.filter(g => g.id !== id);
+                    commitChanges();
+                }
+            });
 
-            function renderTransactions() {
-                const body = $('#transactions-table-body');
-                body.innerHTML = state.transactions.map(t => `
-                    <tr class="border-b">
-                        <td class="py-3">${t.description}</td>
-                        <td>${t.category}</td>
-                        <td class="text-right ${t.type === 'income' ? 'text-emerald-600' : 'text-red-600'}">${t.type === 'income' ? '+' : '-'} ${formatCurrency(t.amount)}</td>
-                        <td class="text-center">
-                            <button data-id="${t.id}" class="edit-transaction-btn text-slate-400 hover:text-indigo-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
-                            <button data-id="${t.id}" class="delete-transaction-btn text-slate-400 hover:text-red-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                        </td>
-                    </tr>
-                `).join('');
-                const balance = state.transactions.reduce((acc, t) => acc + (t.type === 'income' ? t.amount : -t.amount), 0);
-                $('#finance-balance').textContent = formatCurrency(balance);
-                renderExpensesChart();
-            }
-
-            function renderExpensesChart() {
-                const ctx = document.getElementById('expensesChart');
-                if (!ctx) return;
-                if (expensesChartInstance) expensesChartInstance.destroy();
-
-                const expenseData = state.transactions
-                    .filter(t => t.type === 'expense')
-                    .reduce((acc, t) => {
-                        acc[t.category] = (acc[t.category] || 0) + t.amount;
-                        return acc;
-                    }, {});
-
-                expensesChartInstance = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(expenseData),
-                        datasets: [{
-                            data: Object.values(expenseData),
-                            backgroundColor: ['rgba(79, 70, 229, 0.8)','rgba(245, 158, 11, 0.8)','rgba(14, 165, 233, 0.8)','rgba(239, 68, 68, 0.8)'],
-                            borderColor: '#fff',
-                        }]
-                    },
-                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            // Habits
+            $('#add-habit-btn').addEventListener('click', () => {
+                openModal('Novo Hábito', `<input type="text" name="text" placeholder="Descrição do hábito" class="w-full p-2 border rounded">`, (data) => {
+                    state.habits.push({ id: crypto.randomUUID(), text: data.text, completed: false });
+                    closeModal(); commitChanges();
                 });
-            }
-
-            function renderShoppingList() {
-                ['mercado', 'tecnologia', 'lazer'].forEach(category => {
-                    const list = $(`#shopping-list-${category}`);
-                    const items = state.shoppingList.filter(item => item.category === category);
-                    list.innerHTML = items.map(item => `
-                        <li class="flex items-center justify-between group">
-                            <div class="flex items-center">
-                                <input type="checkbox" data-id="${item.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 shopping-item-check" ${item.completed ? 'checked' : ''}>
-                                <span class="ml-3 ${item.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${item.text}</span>
-                            </div>
-                            <div class="hidden group-hover:flex gap-2">
-                                <button data-id="${item.id}" class="edit-shopping-item-btn text-slate-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
-                                <button data-id="${item.id}" class="delete-shopping-item-btn text-slate-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                            </div>
-                        </li>
-                    `).join('');
-                    if (items.length === 0) list.innerHTML = `<li class="text-slate-400">Nenhum item.</li>`;
-                });
-            }
+            });
+            $('#habits-list').addEventListener('click', (e) => {
+                const id = e.target.closest('button, input')?.dataset.id;
+                if (!id) return;
+                const habit = state.habits.find(h => h.id === id);
+                if (e.target.closest('.edit-habit-btn')) {
+                    openModal('Editar Hábito', `<input type="text" name="text" value="${habit.text}" class="w-full p-2 border rounded">`, data => {
+                       habit.text = data.text;
+                       closeModal(); commitChanges();
+                    });
+                }
+                if (e.target.closest('.delete-habit-btn')) {
+                    state.habits = state.habits.filter(h => h.id !== id);
+                    commitChanges();
+                }
+                if (e.target.closest('.habit-check')) {
+                    habit.completed = e.target.checked;
+                    commitChanges();
+                }
+            });
             
-            function renderTodos() {
-                const body = $('#todo-table-body');
-                const priorityMap = { alta: 'bg-red-100 text-red-800', media: 'bg-amber-100 text-amber-800', baixa: 'bg-green-100 text-green-800' };
-                const statusMap = { pendente: 'bg-slate-100 text-slate-800', andamento: 'bg-sky-100 text-sky-800', concluido: 'bg-emerald-100 text-emerald-800' };
-                body.innerHTML = state.todos.map(todo => `
-                    <tr class="border-b">
-                        <td class="py-4 ${todo.status === 'concluido' ? 'line-through text-slate-500' : ''}">${todo.text}</td>
-                        <td><span class="px-2 py-1 text-xs font-semibold rounded-full ${priorityMap[todo.priority]}">${todo.priority}</span></td>
-                        <td><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusMap[todo.status]}">${todo.status}</span></td>
-                        <td class="text-center">
-                            <button data-id="${todo.id}" class="edit-todo-btn text-slate-400 hover:text-indigo-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
-                            <button data-id="${todo.id}" class="delete-todo-btn text-slate-400 hover:text-red-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
+            // Month Achievements
+            $('#add-achievement-btn').addEventListener('click', () => {
+                openModal('Nova Conquista', `<input type="text" name="text" placeholder="Descrição da conquista" class="w-full p-2 border rounded">`, (data) => {
+                    state.monthAchievements.push({ id: crypto.randomUUID(), text: data.text });
+                    closeModal(); commitChanges();
+                });
+            });
+            $('#achievements-list').addEventListener('click', (e) => {
+                const id = e.target.closest('button')?.dataset.id;
+                if (!id) return;
+                const achievement = state.monthAchievements.find(a => a.id === id);
+                if(e.target.closest('.edit-achievement-btn')) {
+                    openModal('Editar Conquista', `<input type="text" name="text" value="${achievement.text}" class="w-full p-2 border rounded">`, data => {
+                        achievement.text = data.text;
+                        closeModal(); commitChanges();
+                    });
+                }
+                if(e.target.closest('.delete-achievement-btn')) {
+                    state.monthAchievements = state.monthAchievements.filter(a => a.id !== id);
+                    commitChanges();
+                }
+            });
+
+            // Finance
+            const transactionForm = (type) => `
+                <input type="text" name="description" placeholder="Descrição" class="w-full p-2 border rounded">
+                <input type="text" name="category" placeholder="Categoria" class="w-full p-2 border rounded">
+                <input type="number" name="amount" placeholder="Valor" step="0.01" class="w-full p-2 border rounded">
+                <input type="hidden" name="type" value="${type}">
+            `;
+            $('#add-income-btn').addEventListener('click', () => openModal('Nova Receita', transactionForm('income'), (data) => {
+                state.transactions.push({ id: crypto.randomUUID(), ...data });
+                closeModal(); commitChanges();
+            }));
+            $('#add-expense-btn').addEventListener('click', () => openModal('Nova Despesa', transactionForm('expense'), (data) => {
+                state.transactions.push({ id: crypto.randomUUID(), ...data });
+                closeModal(); commitChanges();
+            }));
+            $('#transactions-table-body').addEventListener('click', e => {
+                const id = e.target.closest('button')?.dataset.id;
+                if (!id) return;
+                const transaction = state.transactions.find(t => t.id === id);
+                if (e.target.closest('.edit-transaction-btn')) {
+                    openModal(`Editar ${transaction.type === 'income' ? 'Receita' : 'Despesa'}`, transactionForm(transaction.type), data => {
+                       Object.assign(transaction, data);
+                       closeModal(); commitChanges();
+                    }, transaction);
+                }
+                if (e.target.closest('.delete-transaction-btn')) {
+                    state.transactions = state.transactions.filter(t => t.id !== id);
+                    commitChanges();
+                }
+            });
             
-            function renderGoals() {
-                const list = $('#goals-list');
-                const categoryColors = { Financeira: 'bg-indigo-600', Saúde: 'bg-emerald-500', Estudos: 'bg-amber-500', Pessoal: 'bg-sky-500' };
-                list.innerHTML = state.goals.map(goal => {
-                    const percentage = goal.target > 0 ? Math.round((goal.current / goal.target) * 100) : 0;
-                    return `
-                        <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h3 class="text-xl font-semibold text-slate-700">${goal.category}</h3>
-                                    <p class="text-slate-600 mt-1">${goal.text}</p>
-                                </div>
-                                <div class="flex gap-2">
-                                     <button data-id="${goal.id}" class="edit-goal-btn text-slate-400 hover:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
-                                    <button data-id="${goal.id}" class="delete-goal-btn text-slate-400 hover:text-red-600"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <div class="flex justify-between mb-1"><span class="text-slate-700">${goal.unit === 'R$' ? formatCurrency(goal.current) : goal.current} / ${goal.unit === 'R$' ? formatCurrency(goal.target) : goal.target} ${goal.unit !== '%' && goal.unit !== 'R$' ? goal.unit : ''}</span><span class="text-slate-500">${percentage}%</span></div>
-                                <div class="w-full bg-slate-200 rounded-full h-2.5"><div class="${categoryColors[goal.category] || 'bg-slate-500'} h-2.5 rounded-full" style="width: ${percentage}%"></div></div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-
-            // --- EVENT LISTENERS & CRUD ---
-            // NOVO: Todas as chamadas para renderAll() foram substituídas por commitChanges()
-            function setupEventListeners() {
-                // Day Tasks & Highlights
-                $('#add-day-task-btn').addEventListener('click', () => {
-                    openModal('Nova Tarefa do Dia', `<input type="text" name="text" placeholder="Descrição da tarefa" class="w-full p-2 border rounded">`, (data) => {
-                        state.dayTasks.push({ id: crypto.randomUUID(), text: data.text, completed: false });
-                        closeModal();
-                        commitChanges();
-                    });
+            // Shopping
+            $$('.add-shopping-item-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                const category = e.target.dataset.category;
+                openModal(`Novo Item - ${category}`, `<input type="text" name="text" placeholder="Nome do item" class="w-full p-2 border rounded"><input type="hidden" name="category" value="${category}">`, data => {
+                    state.shoppingList.push({ id: crypto.randomUUID(), completed: false, ...data });
+                    closeModal(); commitChanges();
                 });
-                 $('#add-highlight-btn').addEventListener('click', () => {
-                    openModal('Novo Destaque do Dia', `<input type="text" name="text" placeholder="Descrição do destaque" class="w-full p-2 border rounded">`, (data) => {
-                        state.dayHighlights.push({ id: crypto.randomUUID(), text: data.text });
-                        closeModal();
-                        commitChanges();
-                    });
-                });
-                $('#day').addEventListener('click', (e) => {
-                    const button = e.target.closest('button, input');
-                    if (!button) return;
-                    const id = button.dataset.id;
-                    if (!id) return;
-                    
-                    if (button.matches('.edit-day-task-btn')) {
-                        const task = state.dayTasks.find(t => t.id === id);
-                        openModal('Editar Tarefa', `<input type="text" name="text" value="${task.text}" class="w-full p-2 border rounded">`, (data) => {
-                            task.text = data.text;
-                            closeModal(); commitChanges();
-                        });
-                    } else if (button.matches('.delete-day-task-btn')) {
-                        state.dayTasks = state.dayTasks.filter(t => t.id !== id);
-                        commitChanges();
-                    } else if (button.matches('.day-task-check')) {
-                        const task = state.dayTasks.find(t => t.id === id);
-                        task.completed = button.checked;
-                        commitChanges();
-                    } else if (button.matches('.edit-highlight-btn')) {
-                         const highlight = state.dayHighlights.find(h => h.id === id);
-                        openModal('Editar Destaque', `<input type="text" name="text" value="${highlight.text}" class="w-full p-2 border rounded">`, (data) => {
-                            highlight.text = data.text;
-                            closeModal(); commitChanges();
-                        });
-                    } else if (button.matches('.delete-highlight-btn')) {
-                        state.dayHighlights = state.dayHighlights.filter(h => h.id !== id);
-                        commitChanges();
-                    }
-                });
-
-                // Week Goals
-                $('#add-week-goal-btn').addEventListener('click', () => {
-                    openModal('Novo Objetivo Semanal', `<input type="text" name="text" placeholder="Descrição do objetivo" class="w-full p-2 border rounded">`, (data) => {
-                        state.weekGoals.push({ id: crypto.randomUUID(), text: data.text });
-                        closeModal();
-                        commitChanges();
-                    });
-                });
-                 $('#week-goals-list').addEventListener('click', (e) => {
-                    const id = e.target.closest('button')?.dataset.id;
-                    if (!id) return;
-                    const goal = state.weekGoals.find(g => g.id === id);
-                    if (e.target.closest('.edit-week-goal-btn')) {
-                        openModal('Editar Objetivo', `<input type="text" name="text" value="${goal.text}" class="w-full p-2 border rounded">`, data => {
-                            goal.text = data.text;
-                            closeModal();
-                            commitChanges();
-                        });
-                    }
-                    if (e.target.closest('.delete-week-goal-btn')) {
-                        state.weekGoals = state.weekGoals.filter(g => g.id !== id);
-                        commitChanges();
-                    }
-                });
-
-                // Habits
-                $('#add-habit-btn').addEventListener('click', () => {
-                    openModal('Novo Hábito', `<input type="text" name="text" placeholder="Descrição do hábito" class="w-full p-2 border rounded">`, (data) => {
-                        state.habits.push({ id: crypto.randomUUID(), text: data.text, completed: false });
-                        closeModal();
-                        commitChanges();
-                    });
-                });
-                 $('#habits-list').addEventListener('click', (e) => {
-                    const id = e.target.closest('button, input')?.dataset.id;
-                    if (!id) return;
-                    const habit = state.habits.find(h => h.id === id);
-                    if (e.target.closest('.edit-habit-btn')) {
-                        openModal('Editar Hábito', `<input type="text" name="text" value="${habit.text}" class="w-full p-2 border rounded">`, data => {
-                           habit.text = data.text;
-                           closeModal();
-                           commitChanges();
-                        });
-                    }
-                    if (e.target.closest('.delete-habit-btn')) {
-                        state.habits = state.habits.filter(h => h.id !== id);
-                        commitChanges();
-                    }
-                    if (e.target.closest('.habit-check')) {
-                        habit.completed = e.target.checked;
-                        commitChanges();
-                    }
-                });
-                
-                // Month Achievements
-                 $('#add-achievement-btn').addEventListener('click', () => {
-                    openModal('Nova Conquista', `<input type="text" name="text" placeholder="Descrição da conquista" class="w-full p-2 border rounded">`, (data) => {
-                        state.monthAchievements.push({ id: crypto.randomUUID(), text: data.text });
-                        closeModal();
-                        commitChanges();
-                    });
-                });
-                $('#achievements-list').addEventListener('click', (e) => {
-                    const id = e.target.closest('button')?.dataset.id;
-                    if (!id) return;
-                    const achievement = state.monthAchievements.find(a => a.id === id);
-                    if(e.target.closest('.edit-achievement-btn')) {
-                        openModal('Editar Conquista', `<input type="text" name="text" value="${achievement.text}" class="w-full p-2 border rounded">`, data => {
-                            achievement.text = data.text;
-                            closeModal();
-                            commitChanges();
-                        });
-                    }
-                    if(e.target.closest('.delete-achievement-btn')) {
-                        state.monthAchievements = state.monthAchievements.filter(a => a.id !== id);
-                        commitChanges();
-                    }
-                });
-
-                // Finance
-                const transactionForm = (type) => `
-                    <input type="text" name="description" placeholder="Descrição" class="w-full p-2 border rounded">
-                    <input type="text" name="category" placeholder="Categoria" class="w-full p-2 border rounded">
-                    <input type="number" name="amount" placeholder="Valor" step="0.01" class="w-full p-2 border rounded">
-                    <input type="hidden" name="type" value="${type}">
-                `;
-                $('#add-income-btn').addEventListener('click', () => openModal('Nova Receita', transactionForm('income'), (data) => {
-                    state.transactions.push({ id: crypto.randomUUID(), ...data });
-                    closeModal();
+            }));
+            $('#buy').addEventListener('click', e => {
+                const id = e.target.closest('button, input')?.dataset.id;
+                if (!id) return;
+                const item = state.shoppingList.find(i => i.id === id);
+                if (e.target.closest('.edit-shopping-item-btn')) {
+                     openModal('Editar Item', `<input type="text" name="text" class="w-full p-2 border rounded" value="${item.text}">`, data => {
+                         item.text = data.text;
+                         closeModal(); commitChanges();
+                     });
+                }
+                if (e.target.closest('.delete-shopping-item-btn')) {
+                    state.shoppingList = state.shoppingList.filter(i => i.id !== id);
                     commitChanges();
-                }));
-                 $('#add-expense-btn').addEventListener('click', () => openModal('Nova Despesa', transactionForm('expense'), (data) => {
-                    state.transactions.push({ id: crypto.randomUUID(), ...data });
-                    closeModal();
+                }
+                if (e.target.closest('.shopping-item-check')) {
+                    item.completed = e.target.checked;
                     commitChanges();
-                }));
-                $('#transactions-table-body').addEventListener('click', e => {
-                    const id = e.target.closest('button')?.dataset.id;
-                    if (!id) return;
-                    const transaction = state.transactions.find(t => t.id === id);
-                    if (e.target.closest('.edit-transaction-btn')) {
-                        openModal(`Editar ${transaction.type === 'income' ? 'Receita' : 'Despesa'}`, transactionForm(transaction.type), data => {
-                           Object.assign(transaction, data);
-                           closeModal();
-                           commitChanges();
-                        }, transaction);
-                    }
-                    if (e.target.closest('.delete-transaction-btn')) {
-                        state.transactions = state.transactions.filter(t => t.id !== id);
-                        commitChanges();
-                    }
-                });
-                
-                // Shopping
-                $$('.add-shopping-item-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                    const category = e.target.dataset.category;
-                    openModal(`Novo Item - ${category}`, `<input type="text" name="text" placeholder="Nome do item" class="w-full p-2 border rounded"><input type="hidden" name="category" value="${category}">`, data => {
-                        state.shoppingList.push({ id: crypto.randomUUID(), completed: false, ...data });
-                        closeModal();
-                        commitChanges();
-                    });
-                }));
-                $('#buy').addEventListener('click', e => {
-                    const id = e.target.closest('button, input')?.dataset.id;
-                    if (!id) return;
-                    const item = state.shoppingList.find(i => i.id === id);
-                    if (e.target.closest('.edit-shopping-item-btn')) {
-                         openModal('Editar Item', `<input type="text" name="text" class="w-full p-2 border rounded" value="${item.text}">`, data => {
-                             item.text = data.text;
-                             closeModal();
-                             commitChanges();
-                         });
-                    }
-                    if (e.target.closest('.delete-shopping-item-btn')) {
-                        state.shoppingList = state.shoppingList.filter(i => i.id !== id);
-                        commitChanges();
-                    }
-                    if (e.target.closest('.shopping-item-check')) {
-                        item.completed = e.target.checked;
-                        commitChanges();
-                    }
-                });
+                }
+            });
 
-                // To-Do
-                const todoFormHtml = `
-                    <input type="text" name="text" placeholder="Descrição da tarefa" class="w-full p-2 border rounded">
-                    <select name="priority" class="w-full p-2 border rounded"><option value="baixa">Baixa</option><option value="media">Média</option><option value="alta">Alta</option></select>
-                    <select name="status" class="w-full p-2 border rounded"><option value="pendente">Pendente</option><option value="andamento">Em Andamento</option><option value="concluido">Concluído</option></select>
-                `;
-                $('#add-todo-btn').addEventListener('click', () => openModal('Nova Tarefa', todoFormHtml, data => {
-                    state.todos.push({ id: crypto.randomUUID(), ...data });
-                    closeModal();
+            // To-Do
+            const todoFormHtml = `
+                <input type="text" name="text" placeholder="Descrição da tarefa" class="w-full p-2 border rounded">
+                <select name="priority" class="w-full p-2 border rounded"><option value="baixa">Baixa</option><option value="media">Média</option><option value="alta">Alta</option></select>
+                <select name="status" class="w-full p-2 border rounded"><option value="pendente">Pendente</option><option value="andamento">Em Andamento</option><option value="concluido">Concluído</option></select>
+            `;
+            $('#add-todo-btn').addEventListener('click', () => openModal('Nova Tarefa', todoFormHtml, data => {
+                state.todos.push({ id: crypto.randomUUID(), ...data });
+                closeModal(); commitChanges();
+            }));
+            $('#todo-table-body').addEventListener('click', e => {
+                const id = e.target.closest('button')?.dataset.id;
+                if (!id) return;
+                const todo = state.todos.find(t => t.id === id);
+                if (e.target.closest('.edit-todo-btn')) {
+                    openModal('Editar Tarefa', todoFormHtml, data => {
+                        Object.assign(todo, data);
+                        closeModal(); commitChanges();
+                    }, todo);
+                }
+                if (e.target.closest('.delete-todo-btn')) {
+                    state.todos = state.todos.filter(t => t.id !== id);
                     commitChanges();
-                }));
-                 $('#todo-table-body').addEventListener('click', e => {
-                    const id = e.target.closest('button')?.dataset.id;
-                    if (!id) return;
-                    const todo = state.todos.find(t => t.id === id);
-                    if (e.target.closest('.edit-todo-btn')) {
-                        openModal('Editar Tarefa', todoFormHtml, data => {
-                            Object.assign(todo, data);
-                            closeModal();
-                            commitChanges();
-                        }, todo);
-                    }
-                    if (e.target.closest('.delete-todo-btn')) {
-                        state.todos = state.todos.filter(t => t.id !== id);
-                        commitChanges();
-                    }
-                });
-                
-                // Goals
-                const goalFormHtml = `
-                    <input type="text" name="text" placeholder="Descrição da meta" class="w-full p-2 border rounded">
-                    <select name="category" class="w-full p-2 border rounded"><option>Financeira</option><option>Saúde</option><option>Estudos</option><option>Pessoal</option></select>
-                    <input type="number" name="current" placeholder="Valor Atual" class="w-full p-2 border rounded" step="any">
-                    <input type="number" name="target" placeholder="Valor Alvo" class="w-full p-2 border rounded" step="any">
-                    <input type="text" name="unit" placeholder="Unidade (ex: R$, km, %)" class="w-full p-2 border rounded">
-                `;
-                 $('#add-goal-btn').addEventListener('click', () => openModal('Nova Meta', goalFormHtml, data => {
-                    state.goals.push({ id: crypto.randomUUID(), ...data });
-                    closeModal();
+                }
+            });
+            
+            // Goals
+            const goalFormHtml = `
+                <input type="text" name="text" placeholder="Descrição da meta" class="w-full p-2 border rounded">
+                <select name="category" class="w-full p-2 border rounded"><option>Financeira</option><option>Saúde</option><option>Estudos</option><option>Pessoal</option></select>
+                <input type="number" name="current" placeholder="Valor Atual" class="w-full p-2 border rounded" step="any">
+                <input type="number" name="target" placeholder="Valor Alvo" class="w-full p-2 border rounded" step="any">
+                <input type="text" name="unit" placeholder="Unidade (ex: R$, km, %)" class="w-full p-2 border rounded">
+            `;
+            $('#add-goal-btn').addEventListener('click', () => openModal('Nova Meta', goalFormHtml, data => {
+                state.goals.push({ id: crypto.randomUUID(), ...data });
+                closeModal(); commitChanges();
+            }));
+            $('#goals-list').addEventListener('click', e => {
+                const id = e.target.closest('button')?.dataset.id;
+                if (!id) return;
+                const goal = state.goals.find(g => g.id === id);
+                if (e.target.closest('.edit-goal-btn')) {
+                    openModal('Editar Meta', goalFormHtml, data => {
+                        Object.assign(goal, data);
+                        closeModal(); commitChanges();
+                    }, goal);
+                }
+                if (e.target.closest('.delete-goal-btn')) {
+                    state.goals = state.goals.filter(g => g.id !== id);
                     commitChanges();
-                }));
-                 $('#goals-list').addEventListener('click', e => {
-                    const id = e.target.closest('button')?.dataset.id;
-                    if (!id) return;
-                    const goal = state.goals.find(g => g.id === id);
-                    if (e.target.closest('.edit-goal-btn')) {
-                        openModal('Editar Meta', goalFormHtml, data => {
-                            Object.assign(goal, data);
-                            closeModal();
-                            commitChanges();
-                        }, goal);
-                    }
-                    if (e.target.closest('.delete-goal-btn')) {
-                        state.goals = state.goals.filter(g => g.id !== id);
-                        commitChanges();
-                    }
-                });
-            }
+                }
+            });
+        }
 
-
-            // --- INITIALIZATION ---
-            setupEventListeners();
-            const initialHash = window.location.hash || '#dashboard';
-            showPage(initialHash);
-            commitChanges(); // NOVO: Usa commitChanges para renderizar e salvar o estado inicial, se necessário.
-        });
+        // ===================================================================
+        // 8. INICIALIZAÇÃO DA APLICAÇÃO
+        // ===================================================================
+        loadProfiles();
+        state = loadProfileData(profilesState.currentProfileId) || { ...defaultState };
+        
+        setupEventListeners();
+        const initialHash = window.location.hash || '#dashboard';
+        showPage(initialHash);
+        commitChanges();
+    });
     </script>
 </body>
 </html>
