@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dayle - Seu Organizador Pessoal</title>
+    <title>Dale - Seu Organizador Pessoal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 
     <style>
         body {
@@ -27,6 +28,28 @@
         }
         .modal-content {
             transition: transform 0.3s ease;
+        }
+
+        .day-cell {
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-radius: 8px;
+        }
+        .day-cell:hover {
+            background-color: #eef2ff;
+        }
+        .day-cell.has-reminder {
+            background-color: #fef9c3;
+            font-weight: bold;
+            color: #991b1b;
+            position: relative;
+        }
+        .day-cell.is-today {
+            background-color: #4f46e5;
+            color: white;
+        }
+        .day-cell.is-today:hover {
+            background-color: #4338ca; 
         }
         @media (max-width: 768px) {
             #menu-container {
@@ -51,6 +74,7 @@
 </head>
 <body class="bg-slate-100">
 
+
     <div class="flex h-screen relative overflow-hidden">
         <aside class="w-64 bg-slate-800 text-white flex flex-col flex-shrink-0" id="menu-container">
             <button id="close-menu-btn" class="absolute top-4 right-4 text-slate-400 hover:text-white md:hidden z-10" aria-label="Fechar menu">
@@ -58,7 +82,7 @@
             </button>
             <div class="p-6 flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-400"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>
-                <h1 class="text-xl font-bold">Dayle</h1>
+                <h1 class="text-xl font-bold">Dale</h1>
             </div>
             <nav class="flex-1 px-4 space-y-2 overflow-y-auto" id="nav-menu">
                 <a href="#dashboard" class="nav-link bg-indigo-600 text-white flex items-center gap-3 px-4 py-2 rounded-lg transition-colors hover:bg-indigo-500">
@@ -96,16 +120,17 @@
             </div>
         </aside>
 
+
         <div id="menu-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden"></div>
-        
+       
         <main class="flex-1 p-4 sm:p-8 overflow-y-auto w-full">
             <div class="md:hidden flex items-center mb-6">
                  <button id="open-menu-btn" class="text-slate-800 p-2 -ml-2" aria-label="Abrir menu">
                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
                  </button>
-                 <h2 class="text-xl font-bold text-slate-800 ml-4">Dayle</h2>
+                 <h2 class="text-xl font-bold text-slate-800 ml-4">Dale</h2>
             </div>
-            
+           
             <section id="dashboard" class="page">
                 <h2 class="text-3xl font-bold text-slate-800 mb-6">Painel de Controle</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -130,8 +155,12 @@
                     <h3 class="text-xl font-semibold text-slate-700 mb-4">Progresso Geral das Metas</h3>
                     <div id="db-goals-progress" class="space-y-4"></div>
                 </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-slate-500 font-medium">Próximos Lembretes</h3>
+                        <ul id="db-reminders" class="mt-2 space-y-2 text-slate-700 max-h-40 overflow-y-auto">
+                </div>
             </section>
-            
+           
             <section id="day" class="page">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-3xl font-bold text-slate-800">📅 Visão do Dia</h2>
@@ -157,7 +186,7 @@
                     </div>
                 </div>
             </section>
-            
+           
             <section id="week" class="page">
                 <h2 class="text-3xl font-bold text-slate-800 mb-6">📆 Visão da Semana</h2>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -178,13 +207,29 @@
                 </div>
             </section>
 
+
             <section id="month" class="page">
                 <h2 class="text-3xl font-bold text-slate-800 mb-6">📅 Visão do Mês</h2>
+
+
+
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-xl font-semibold text-slate-700 mb-4">Calendário</h3>
-                        <div class="grid grid-cols-7 gap-1 text-center" id="calendar-grid"></div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 id="calendar-title" class="text-xl font-semibold text-slate-700 w-48 capitalize"></h3>
+                            <div class="flex gap-2">
+                                <button id="prev-month-btn" class="p-2 rounded-md hover:bg-slate-200 transition-colors" aria-label="Mês anterior">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                                </button>
+                                <button id="next-month-btn" class="p-2 rounded-md hover:bg-slate-200 transition-colors" aria-label="Próximo mês">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center" id="calendar-grid">
+                            </div>
                     </div>
+
                     <div class="space-y-6">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center mb-3">
@@ -201,6 +246,7 @@
                     </div>
                 </div>
             </section>
+
 
             <section id="finance" class="page">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -247,6 +293,7 @@
                 </div>
             </section>
 
+
             <section id="buy" class="page">
                 <h2 class="text-3xl font-bold text-slate-800 mb-6">🛒 Lista de Compras</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -274,6 +321,7 @@
                 </div>
             </section>
 
+
             <section id="todo" class="page">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-3xl font-bold text-slate-800">✅ A Fazer</h2>
@@ -294,6 +342,7 @@
                 </div>
             </section>
 
+
             <section id="goals" class="page">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-3xl font-bold text-slate-800">🎯 Metas</h2>
@@ -304,12 +353,13 @@
         </main>
     </div>
 
+
     <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
         <div id="modal-backdrop" class="fixed inset-0 modal-backdrop opacity-0" style="transition: opacity 0.3s ease;"></div>
         <div id="modal-content" class="relative bg-white rounded-lg shadow-xl w-full max-w-md m-4 p-6 modal-content opacity-0 scale-95" style="transition: all 0.3s ease;">
             <h3 id="modal-title" class="text-2xl font-bold text-slate-800 mb-4"></h3>
             <p id="modal-message" class="text-slate-600 my-4 hidden"></p>
-            <form id="modal-form" class="space-y-4"></form>
+            <div id="modal-form-content" class="space-y-4"></div>
             <div id="modal-buttons" class="mt-6 flex justify-end gap-3"></div>
             <button id="modal-close" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600" aria-label="Fechar">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -324,6 +374,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => document.querySelectorAll(selector);
     const formatCurrency = (value) => (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    function checkLogin() {
+        if (!currentProfileId) {
+            showAlert("Faça login para usar esta funcionalidade.");
+            return false;
+        }
+        return true;
+    }
 
     const SUPABASE_URL = 'https://xbdvqegxtjyygibheikm.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhiZHZxZWd4dGp5eWdpYmhlaWttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MDk4NzEsImV4cCI6MjA3NDM4NTg3MX0.GJrkOw6CyduBcNGXepqKN7ybauBKjv5PZ98s2L4zZ9I';
@@ -336,7 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const openMenuBtn = $('#open-menu-btn');
     const closeMenuBtn = $('#close-menu-btn');
     const menuOverlay = $('#menu-overlay');
-
+    let displayedDate = new Date();
     function toggleMenu(show) {
         menuContainer.classList.toggle('menu-open', show);
         menuOverlay.classList.toggle('hidden', !show);
@@ -378,31 +435,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     async function loadAllProfileData(profileId) {
         const queries = [
-            supabaseClient.from('day_tasks').select('*').eq('profile_id', profileId),
-            supabaseClient.from('day_highlights').select('*').eq('profile_id', profileId),
+            supabaseClient.from('day_tasks').select('*, day_subtasks(*)').eq('profile_id', profileId).order('created_at'),
+            supabaseClient.from('day_highlights').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('notepad').select('content').eq('profile_id', profileId).maybeSingle(),
-            supabaseClient.from('week_goals').select('*').eq('profile_id', profileId),
-            supabaseClient.from('habits').select('*').eq('profile_id', profileId),
-            supabaseClient.from('month_achievements').select('*').eq('profile_id', profileId),
-            supabaseClient.from('transactions').select('*').eq('profile_id', profileId),
-            supabaseClient.from('shopping_list').select('*').eq('profile_id', profileId),
-            supabaseClient.from('todos').select('*').eq('profile_id', profileId),
-            supabaseClient.from('goals').select('*').eq('profile_id', profileId),
+            supabaseClient.from('week_goals').select('*').eq('profile_id', profileId).order('created_at'),
+            supabaseClient.from('habits').select('*').eq('profile_id', profileId).order('created_at'),
+            supabaseClient.from('month_achievements').select('*').eq('profile_id', profileId).order('created_at'),
+            supabaseClient.from('transactions').select('*').eq('profile_id', profileId).order('created_at', { ascending: false }),
+            supabaseClient.from('shopping_list').select('*').eq('profile_id', profileId).order('created_at'),
+            supabaseClient.from('todos').select('*').eq('profile_id', profileId).order('created_at'),
+            supabaseClient.from('goals').select('*').eq('profile_id', profileId).order('created_at'),
+            supabaseClient.from('month_reminders').select('*').eq('profile_id', profileId)
         ];
         try {
             const results = await Promise.all(queries);
-            const [
-                dayTasks, dayHighlights, notepad, weekGoals, habits, 
-                monthAchievements, transactions, shoppingList, todos, goals
-            ] = results.map(res => res.data);
-            
+            const [ dayTasks, dayHighlights, notepad, weekGoals, habits, monthAchievements, transactions, shoppingList, todos, goals, monthReminders] = results.map(res => res.data);
             state = {
                 dayTasks: dayTasks || [], dayHighlights: dayHighlights || [], notepadContent: notepad?.content || '',
                 weekGoals: weekGoals || [], habits: habits || [], monthAchievements: monthAchievements || [],
                 transactions: transactions || [], shoppingList: shoppingList || [], todos: todos || [], goals: goals || [],
+                monthReminders: monthReminders || []
             };
         } catch (error) {
-            console.error("Erro ao carregar dados do perfil:", error);
+            console.error("Erro ao carregar dados:", error);
             showAlert(`Erro ao carregar dados: ${error.message}`);
         }
     }
@@ -412,18 +467,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (error) {
             showAlert(`Erro no cadastro: ${error.message}`);
         } else {
-            showAlert('Cadastro realizado! Por favor, faça o login para continuar.');
+            showAlert('Cadastro realizado! Faça o login para continuar.');
             closeModal();
         }
     }
 
     async function signIn(email, password) {
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) {
-            showAlert(`Erro no login: ${error.message}`);
-        } else {
-            closeModal();
-        }
+        if (error) showAlert(`Erro no login: ${error.message}`);
+        else closeModal();
     }
 
     async function signOut() {
@@ -434,18 +486,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ===================================================================
     // 4. LÓGICA DO MODAL PERSONALIZADO
     // ===================================================================
-    const modal = $('#modal');
-    const modalBackdrop = $('#modal-backdrop');
-    const modalContent = $('#modal-content');
-    const modalTitle = $('#modal-title');
-    const modalMessage = $('#modal-message');
-    const modalForm = $('#modal-form');
-    const modalButtons = $('#modal-buttons');
-    const modalCloseBtn = $('#modal-close');
+    const modal = $('#modal'), modalBackdrop = $('#modal-backdrop'), modalContent = $('#modal-content'),
+          modalTitle = $('#modal-title'), modalMessage = $('#modal-message'), modalFormContent = $('#modal-form-content'),
+          modalButtons = $('#modal-buttons'), modalCloseBtn = $('#modal-close');
 
     function openModal({title, formHtml = '', message = '', buttonsHtml = ''}) {
         modalTitle.textContent = title;
-        modalForm.innerHTML = formHtml;
+        modalFormContent.innerHTML = formHtml;
         modalButtons.innerHTML = buttonsHtml;
         modalMessage.textContent = message;
         modalMessage.classList.toggle('hidden', !message);
@@ -463,39 +510,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(() => {
             modal.classList.add('hidden');
             modal.classList.remove('flex');
-            modalForm.innerHTML = '';
-            modalButtons.innerHTML = '';
-            modalMessage.innerHTML = '';
+            modalFormContent.innerHTML = ''; modalButtons.innerHTML = ''; modalMessage.innerHTML = '';
         }, 300);
     }
     
     function showAlert(message) {
         openModal({
-            title: 'Aviso',
-            message: message,
+            title: 'Aviso', message: message,
             buttonsHtml: `<button id="modal-ok" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">OK</button>`
         });
-        $('#modal-ok').addEventListener('click', closeModal);
+        $('#modal-ok').addEventListener('click', closeModal, { once: true });
     }
 
     function showAuthModal(type) {
         const isLogin = type === 'login';
         openModal({
             title: isLogin ? 'Login' : 'Cadastro',
-            formHtml: `
-                <input type="email" id="auth-email" placeholder="Login" class="w-full p-2 border rounded" autocomplete="email">
-                <input type="password" id="auth-password" placeholder="Sua senha" class="w-full p-2 border rounded" autocomplete="current-password">
-            `,
-            buttonsHtml: `
-                <button id="modal-cancel-auth" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Cancelar</button>
-                <button id="modal-confirm-auth" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">${isLogin ? 'Entrar' : 'Cadastrar'}</button>
-            `
+            formHtml: `<input type="email" id="auth-email" placeholder="seu@email.com" class="w-full p-2 border rounded" autocomplete="email"><input type="password" id="auth-password" placeholder="Sua senha (mín. 6 caracteres)" class="w-full p-2 border rounded" autocomplete="current-password">`,
+            buttonsHtml: `<button id="modal-cancel-auth" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Cancelar</button><button id="modal-confirm-auth" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">${isLogin ? 'Entrar' : 'Cadastrar'}</button>`
         });
-
         $('#modal-cancel-auth').addEventListener('click', closeModal);
         $('#modal-confirm-auth').addEventListener('click', () => {
             const email = $('#auth-email').value;
             const password = $('#auth-password').value;
+            if (!email || !password) return showAlert("Por favor, preencha e-mail e senha.");
             if (isLogin) signIn(email, password);
             else signUp(email, password);
         });
@@ -504,34 +542,54 @@ document.addEventListener('DOMContentLoaded', async () => {
     function openCrudModal(options) {
         openModal({
             title: options.title,
-            formHtml: options.formHtml,
-            buttonsHtml: `
-                <button id="modal-cancel-form" class="px-4 py-2 bg-slate-200 rounded-lg">Cancelar</button>
-                <button id="modal-save-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Salvar</button>
-            `
+            formHtml: `<form id="dynamic-crud-form">${options.formHtml}</form>`,
+            buttonsHtml: `<button id="modal-cancel-form" class="px-4 py-2 bg-slate-200 rounded-lg">Cancelar</button><button id="modal-save-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Salvar</button>`
         });
+        
         $('#modal-cancel-form').onclick = closeModal;
+        
         $('#modal-save-form').onclick = () => {
-            const formData = new FormData(modalForm);
+            const formElement = $('#dynamic-crud-form');
+            if (!formElement) return;
+
+            const formData = new FormData(formElement);
             const data = {};
+            
             for(let [key, value] of formData.entries()) {
-                const input = modalForm.querySelector(`[name="${key}"]`);
-                if(input.type === 'number') data[key] = parseFloat(value) || 0;
-                else if (input.type === 'checkbox') data[key] = input.checked;
-                else data[key] = value;
+                const input = formElement.querySelector(`[name="${key}"]`);
+                if(!input) continue;
+                if (input.type === 'number') {
+                    const numericValue = parseFloat(String(value).replace(',', '.')) || 0;
+                    data[key] = numericValue;
+                } else if (input.type === 'checkbox') {
+                    data[key] = input.checked;
+                } else {
+                    data[key] = value;
+                }
             }
             options.onSave(data);
         };
+
+        if (options.item) {
+            const formElement = $('#dynamic-crud-form');
+            for (const key in options.item) {
+                const input = formElement.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        input.checked = options.item[key];
+                    } else {
+                        input.value = options.item[key];
+                    }
+                }
+            }
+        }
     }
 
     // ===================================================================
     // 5. NAVEGAÇÃO ENTRE PÁGINAS
     // ===================================================================
-    const navLinks = $$('.nav-link');
-    const pages = $$('.page');
-    const navMenu = $('#nav-menu');
+    const navLinks = $$('.nav-link'), pages = $$('.page'), navMenu = $('#nav-menu');
     let expensesChartInstance = null;
-    
     function showPage(targetId) {
         navLinks.forEach(link => {
             link.classList.toggle('bg-indigo-600', link.getAttribute('href') === targetId);
@@ -540,8 +598,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         pages.forEach(page => page.classList.toggle('active', `#${page.id}` === targetId));
         window.history.pushState(null, '', targetId);
-        if (targetId === '#finance' && currentProfileId) renderExpensesChart();
-        if (targetId === '#dashboard' && currentProfileId) updateDashboard();
+        renderAll();
     }
 
     // ===================================================================
@@ -551,139 +608,347 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateDashboard(); renderDayTasks(); renderDayHighlights(); renderNotepad(); 
         renderWeekGoals(); renderHabits(); renderMonthAchievements(); renderTransactions();
         renderShoppingList(); renderTodos(); renderGoals(); renderCalendar();
+        renderMonthProductivity();
     }
+    
     function updateDashboard() {
         if(!state.dayTasks || !state.transactions || !state.goals || !state.shoppingList) return;
+        
         const pendingTasks = state.dayTasks.filter(t => !t.completed).length;
-        const totalTasks = state.dayTasks.length;
-        $('#db-tasks').innerHTML = `${pendingTasks} <span class="text-2xl text-slate-400 font-medium">/ ${totalTasks}</span>`;
+        $('#db-tasks').innerHTML = `${pendingTasks} <span class="text-2xl text-slate-400 font-medium">/ ${state.dayTasks.length}</span>`;
+        
         const balance = state.transactions.reduce((acc, t) => acc + (t.type === 'income' ? Number(t.amount) : -Number(t.amount)), 0);
         $('#db-balance').textContent = formatCurrency(balance);
-        const goalsInProgress = state.goals.filter(g => g.current < g.target).length;
-        $('#db-goals').textContent = goalsInProgress;
-        const shoppingItems = state.shoppingList.filter(i => !i.completed).slice(0, 3);
-        $('#db-shopping').innerHTML = shoppingItems.map(i => `<li>- ${i.text}</li>`).join('') || '<li class="text-slate-400">Nenhum item.</li>';
+        $('#finance-balance').textContent = formatCurrency(balance);
+        
+        $('#db-goals').textContent = state.goals.filter(g => g.current < g.target).length;
+        
+        $('#db-shopping').innerHTML = state.shoppingList.filter(i => !i.completed).slice(0, 3).map(i => `<li>- ${i.text}</li>`).join('') || '<li class="text-slate-400">Nenhum item.</li>';
+        
         $('#db-goals-progress').innerHTML = state.goals.map(goal => {
-            const percentage = goal.target > 0 ? Math.round((goal.current / goal.target) * 100) : 0;
+            const percentage = goal.target > 0 ? Math.min(100, Math.round((goal.current / goal.target) * 100)) : 0;
             return `<div><div class="flex justify-between mb-1"><span class="text-slate-700 text-sm">${goal.text}</span><span class="text-slate-500 text-sm">${percentage}%</span></div><div class="w-full bg-slate-200 rounded-full h-2"><div class="bg-indigo-600 h-2 rounded-full" style="width: ${percentage}%"></div></div></div>`;
         }).join('');
+
+        const remindersList = $('#db-reminders');
+        if (remindersList) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const upcomingReminders = (state.monthReminders || [])
+                .filter(r => new Date(r.reminder_date + 'T12:00:00') >= today)
+                .sort((a, b) => new Date(a.reminder_date) - new Date(b.reminder_date))
+                .slice(0, 4);
+
+            if (upcomingReminders.length > 0) {
+                remindersList.innerHTML = upcomingReminders.map(r => {
+                    const date = new Date(r.reminder_date + 'T12:00:00');
+                    const formattedDate = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                    return `
+                        <li>
+                            <button class="goto-reminder-btn w-full text-left p-2 rounded-md hover:bg-slate-100 transition-colors" data-date="${r.reminder_date}">
+                                <span class="font-bold text-indigo-600">${formattedDate}:</span>
+                                <span class="ml-2">${r.text}</span>
+                            </button>
+                        </li>
+                    `;
+                }).join('');
+            } else {
+                remindersList.innerHTML = '<li class="text-slate-400">Nenhum lembrete futuro.</li>';
+            }
+        }
     }
+
     function renderDayTasks() {
         const list = $('#day-tasks-list');
         if (!state.dayTasks) { list.innerHTML = ''; return; }
-        list.innerHTML = state.dayTasks.map(task => `<li class="flex items-center justify-between group"><div class="flex items-center"><input type="checkbox" data-id="${task.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 day-task-check" ${task.completed ? 'checked' : ''}> <span class="ml-3 ${task.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${task.text}</span></div><div class="hidden group-hover:flex gap-2"><button data-id="${task.id}" class="delete-day-task-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
+        list.innerHTML = state.dayTasks.map(task => {
+            const subtasksHtml = (task.day_subtasks || []).map(subtask => `
+                <li class="flex items-center justify-between group ml-8">
+                    <div class="flex items-center"><input type="checkbox" data-id="${subtask.id}" class="h-4 w-4 rounded text-indigo-500 day-subtask-check" ${subtask.completed ? 'checked' : ''}><span class="ml-3 text-sm ${subtask.completed ? 'text-slate-400 line-through' : 'text-slate-600'}">${subtask.text}</span></div>
+                    <div class="hidden group-hover:flex gap-1">
+                        <button data-id="${subtask.id}" data-task-id="${task.id}" class="edit-day-subtask-btn text-slate-400 hover:text-indigo-600 p-1" title="Editar Subtarefa"><svg class="pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button>
+                        <button data-id="${subtask.id}" class="delete-day-subtask-btn text-slate-400 hover:text-red-600 p-1" title="Excluir Subtarefa"><svg class="pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                    </div>
+                </li>`).join('');
+            return `<li><div class="flex items-center justify-between group"><div class="flex items-center"><input type="checkbox" data-id="${task.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 day-task-check" ${task.completed ? 'checked' : ''}> <span class="ml-3 ${task.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${task.text}</span></div><div class="hidden group-hover:flex gap-2"><button data-id="${task.id}" class="add-day-subtask-btn text-slate-400 hover:text-green-600" title="Adicionar Subtarefa"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button><button data-id="${task.id}" class="edit-day-task-btn text-slate-400 hover:text-indigo-600" title="Editar Tarefa"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${task.id}" class="delete-day-task-btn text-slate-400 hover:text-red-600" title="Excluir Tarefa"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><ul class="space-y-2 mt-2">${subtasksHtml}</ul></li>`;
+        }).join('');
     }
+    
     function renderDayHighlights() {
         const list = $('#highlights-list');
         if (!state.dayHighlights) { list.innerHTML = ''; return; }
-        list.innerHTML = state.dayHighlights.map(highlight => `<li class="group flex justify-between items-center bg-amber-100 text-amber-800 p-3 rounded-md"><span class="break-all">${highlight.text}</span><div class="hidden group-hover:flex gap-2 flex-shrink-0 ml-2"><button data-id="${highlight.id}" class="delete-highlight-btn text-amber-700 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
+        list.innerHTML = state.dayHighlights.map(highlight => `<li class="group flex justify-between items-center bg-amber-100 text-amber-800 p-3 rounded-md"><span class="break-all">${highlight.text}</span><div class="hidden group-hover:flex gap-2 flex-shrink-0 ml-2"><button data-id="${highlight.id}" class="edit-highlight-btn text-amber-700 hover:text-amber-900"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${highlight.id}" class="delete-highlight-btn text-amber-700 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
     }
+    
     function renderNotepad() { $('#notepad').value = state.notepadContent || ''; }
+    
     function renderWeekGoals() {
         const list = $('#week-goals-list');
         if (!state.weekGoals) { list.innerHTML = ''; return; }
-        list.innerHTML = state.weekGoals.map(goal => `<li class="flex justify-between items-center group"><span>${goal.text}</span><div class="hidden group-hover:flex gap-2"><button data-id="${goal.id}" class="delete-week-goal-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
+        list.innerHTML = state.weekGoals.map(goal => `<li class="flex justify-between items-center group"><span>${goal.text}</span><div class="hidden group-hover:flex gap-2"><button data-id="${goal.id}" class="edit-week-goal-btn text-slate-400 hover:text-indigo-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${goal.id}" class="delete-week-goal-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
     }
+    
     function renderHabits() {
         const list = $('#habits-list');
         if (!state.habits) { list.innerHTML = ''; return; }
-        list.innerHTML = state.habits.map(habit => `<li class="flex items-center justify-between group"><div class="flex items-center"><input type="checkbox" data-id="${habit.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 habit-check" ${habit.completed ? 'checked' : ''}><span class="ml-3 ${habit.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${habit.text}</span></div><div class="hidden group-hover:flex gap-2"><button data-id="${habit.id}" class="delete-habit-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
+        list.innerHTML = state.habits.map(habit => `<li class="flex items-center justify-between group"><div class="flex items-center"><input type="checkbox" data-id="${habit.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 habit-check" ${habit.completed ? 'checked' : ''}><span class="ml-3 ${habit.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${habit.text}</span></div><div class="hidden group-hover:flex gap-2"><button data-id="${habit.id}" class="edit-habit-btn text-slate-400 hover:text-indigo-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${habit.id}" class="delete-habit-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
     }
+
     function renderMonthAchievements() {
         const list = $('#achievements-list');
         if (!state.monthAchievements) { list.innerHTML = ''; return; }
-        list.innerHTML = state.monthAchievements.map(achievement => `<li class="group flex justify-between items-center"><span>${achievement.text}</span><div class="hidden group-hover:flex gap-2"><button data-id="${achievement.id}" class="delete-achievement-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
+        list.innerHTML = state.monthAchievements.map(achievement => `<li class="group flex justify-between items-center"><span>${achievement.text}</span><div class="hidden group-hover:flex gap-2"><button data-id="${achievement.id}" class="edit-achievement-btn text-slate-400 hover:text-indigo-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${achievement.id}" class="delete-achievement-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
     }
+
     function renderCalendar() {
         const grid = $('#calendar-grid');
-        const days = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
-        grid.innerHTML = days.map(d => `<div class="font-semibold text-slate-500 text-sm">${d}</div>`).join('');
-        const today = new Date().getDate();
-        for (let i = 1; i <= 30; i++) {
+        const title = $('#calendar-title');
+        if (!grid || !title) return; 
+
+        grid.innerHTML = '';
+        
+        const year = displayedDate.getFullYear();
+        const month = displayedDate.getMonth();
+
+        title.textContent = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(displayedDate);
+
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const todayRef = new Date();
+        const todayString = `${todayRef.getFullYear()}-${String(todayRef.getMonth() + 1).padStart(2, '0')}-${String(todayRef.getDate()).padStart(2, '0')}`;
+
+        const daysOfWeek = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
+        grid.innerHTML = daysOfWeek.map(d => `<div class="font-semibold text-slate-500 text-sm p-2">${d}</div>`).join('');
+        
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            grid.insertAdjacentHTML('beforeend', '<div></div>');
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
             const dayEl = document.createElement('div');
-            dayEl.className = 'p-2 rounded-md';
-            dayEl.textContent = i;
-            if (i === today) dayEl.classList.add('bg-indigo-600', 'text-white', 'font-bold');
+            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
+            dayEl.className = 'day-cell p-2 flex items-center justify-center';
+            dayEl.textContent = day;
+            dayEl.dataset.date = dateString;
+
+            if (state.monthReminders?.some(r => r.reminder_date === dateString)) {
+                dayEl.classList.add('has-reminder');
+            }
+            if (dateString === todayString) {
+                dayEl.classList.add('is-today');
+            }
             grid.appendChild(dayEl);
         }
     }
+
+    function renderMonthProductivity() {
+        const productivityEl = $('#month-tasks-completed');
+        if (!productivityEl || !state.dayTasks) {
+            if (productivityEl) productivityEl.textContent = '0';
+            return;
+        }
+        const currentYear = displayedDate.getFullYear();
+        const currentMonth = displayedDate.getMonth();
+        const completedThisMonth = state.dayTasks.filter(task => {
+            if (!task.completed || !task.updated_at) {
+                return false;
+            }
+            const taskUpdateDate = new Date(task.updated_at);
+            return taskUpdateDate.getFullYear() === currentYear &&
+                   taskUpdateDate.getMonth() === currentMonth;
+        });
+        productivityEl.textContent = completedThisMonth.length;
+    }
+
+
+
+
+
+
+
+   async function showRemindersForDate(dateString) {
+        if (!checkLogin()) return;
+        const date = new Date(dateString + 'T12:00:00');
+        const formattedDate = new Intl.DateTimeFormat('pt-BR', {dateStyle: 'long'}).format(date);
+        
+        modalFormContent.dataset.currentDate = dateString;
+
+        const renderContent = () => {
+            const remindersForDay = state.monthReminders.filter(r => r.reminder_date === dateString);
+            const remindersHtml = remindersForDay.length > 0
+                ? `<ul class="space-y-2 mb-4 max-h-40 overflow-y-auto">${remindersForDay.map(r => `<li class="flex justify-between items-center bg-slate-100 p-2 rounded-md text-sm"><span>${r.text}</span><button data-id="${r.id}" class="delete-reminder-btn text-red-500 hover:text-red-700 p-1 font-bold text-lg">&times;</button></li>`).join('')}</ul>`
+                : '<p class="text-slate-500 mb-4">Nenhum lembrete para este dia.</p>';
+            
+            const formHtml = `<form id="add-reminder-form" class="flex gap-2"><input id="new-reminder-text" type="text" placeholder="Novo lembrete..." class="flex-grow p-2 border rounded-md"><button type="submit" class="bg-indigo-600 text-white px-4 rounded-md hover:bg-indigo-700">Adicionar</button></form>`;
+            
+            modalFormContent.innerHTML = remindersHtml + formHtml;
+        };
+
+        openModal({
+            title: `Lembretes para ${formattedDate}`,
+            buttonsHtml: `<button id="modal-close-reminders" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Fechar</button>`
+        });
+
+        renderContent();
+        $('#modal-close-reminders').addEventListener('click', closeModal, { once: true });
+    }
+
+
+
+
+
+
+
     function renderTransactions() {
         const body = $('#transactions-table-body');
         if (!state.transactions) { body.innerHTML = ''; return; }
-        body.innerHTML = state.transactions.map(t => `<tr class="border-b"><td class="py-3 px-1">${t.description}</td><td class="px-1">${t.category}</td><td class="text-right px-1 ${t.type === 'income' ? 'text-emerald-600' : 'text-red-600'}">${t.type === 'income' ? '+' : '-'} ${formatCurrency(t.amount)}</td><td class="text-center px-1"><button data-id="${t.id}" class="delete-transaction-btn text-slate-400 hover:text-red-600 p-1"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td></tr>`).join('');
+        body.innerHTML = state.transactions.map(t => `<tr class="border-b"><td class="py-3 px-1">${t.description}</td><td class="px-1">${t.category}</td><td class="text-right px-1 ${t.type === 'income' ? 'text-emerald-600' : 'text-red-600'}">${t.type === 'income' ? '+' : '-'} ${formatCurrency(t.amount)}</td><td class="text-center px-1"><button data-id="${t.id}" class="edit-transaction-btn text-slate-400 hover:text-indigo-600 p-1"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${t.id}" class="delete-transaction-btn text-slate-400 hover:text-red-600 p-1"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td></tr>`).join('');
         renderExpensesChart();
     }
+
     function renderExpensesChart() {
         const ctx = document.getElementById('expensesChart');
         if (!ctx) return;
         if (expensesChartInstance) expensesChartInstance.destroy();
-        if(!state.transactions) return;
+        if(!state.transactions || state.transactions.length === 0) return;
         const expenseData = state.transactions.filter(t => t.type === 'expense').reduce((acc, t) => { acc[t.category] = (acc[t.category] || 0) + Number(t.amount); return acc; }, {});
         expensesChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(expenseData), datasets: [{ data: Object.values(expenseData), backgroundColor: ['rgba(79, 70, 229, 0.8)','rgba(245, 158, 11, 0.8)','rgba(14, 165, 233, 0.8)','rgba(239, 68, 68, 0.8)'], borderColor: '#fff' }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
     }
+
     function renderShoppingList() {
         if(!state.shoppingList) return;
         ['mercado', 'tecnologia', 'lazer'].forEach(category => {
             const list = $(`#shopping-list-${category}`);
             const items = state.shoppingList.filter(item => item.category === category);
-            list.innerHTML = items.map(item => `<li class="flex items-center justify-between group"><div class="flex items-center"><input type="checkbox" data-id="${item.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 shopping-item-check" ${item.completed ? 'checked' : ''}><span class="ml-3 ${item.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${item.text}</span></div><div class="hidden group-hover:flex gap-2"><button data-id="${item.id}" class="delete-shopping-item-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
+            list.innerHTML = items.map(item => `<li class="flex items-center justify-between group"><div class="flex items-center"><input type="checkbox" data-id="${item.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 shopping-item-check" ${item.completed ? 'checked' : ''}><span class="ml-3 ${item.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${item.text}</span></div><div class="hidden group-hover:flex gap-2"><button data-id="${item.id}" class="edit-shopping-item-btn text-slate-400 hover:text-indigo-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${item.id}" class="delete-shopping-item-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
         });
     }
+    
     function renderTodos() {
         const body = $('#todo-table-body');
         if (!state.todos) { body.innerHTML = ''; return; }
-        const priorityMap = { alta: 'bg-red-100 text-red-800', media: 'bg-amber-100 text-amber-800', baixa: 'bg-green-100 text-green-800' };
+        const priorityMap = { baixa: 'bg-green-100 text-green-800', media: 'bg-amber-100 text-amber-800', alta: 'bg-red-100 text-red-800' };
         const statusMap = { pendente: 'bg-slate-100 text-slate-800', andamento: 'bg-sky-100 text-sky-800', concluido: 'bg-emerald-100 text-emerald-800' };
-        body.innerHTML = state.todos.map(todo => `<tr class="border-b"><td class="py-4 px-1 ${todo.status === 'concluido' ? 'line-through text-slate-500' : ''}">${todo.text}</td><td class="px-1"><span class="px-2 py-1 text-xs font-semibold rounded-full ${priorityMap[todo.priority]}">${todo.priority}</span></td><td class="px-1"><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusMap[todo.status]}">${todo.status}</span></td><td class="text-center px-1"><button data-id="${todo.id}" class="delete-todo-btn text-slate-400 hover:text-red-600 p-1"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td></tr>`).join('');
+        body.innerHTML = state.todos.map(todo => `<tr class="border-b"><td class="py-4 px-1 ${todo.status === 'concluido' ? 'line-through text-slate-500' : ''}">${todo.text}</td><td class="px-1"><span class="px-2 py-1 text-xs font-semibold rounded-full ${priorityMap[todo.priority]}">${todo.priority}</span></td><td class="px-1"><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusMap[todo.status]}">${todo.status}</span></td><td class="text-center px-1"><button data-id="${todo.id}" class="edit-todo-btn text-slate-400 hover:text-indigo-600 p-1"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${todo.id}" class="delete-todo-btn text-slate-400 hover:text-red-600 p-1"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td></tr>`).join('');
     }
+    
     function renderGoals() {
         const list = $('#goals-list');
         if (!state.goals) { list.innerHTML = ''; return; }
         const categoryColors = { Financeira: 'bg-indigo-600', Saúde: 'bg-emerald-500', Estudos: 'bg-amber-500', Pessoal: 'bg-sky-500' };
         list.innerHTML = state.goals.map(goal => {
-            const percentage = goal.target > 0 ? Math.round((goal.current / goal.target) * 100) : 0;
-            return `<div class="bg-white p-6 rounded-lg shadow-sm"><div class="flex justify-between items-start"><div><h3 class="text-xl font-semibold text-slate-700">${goal.category}</h3><p class="text-slate-600 mt-1">${goal.text}</p></div><div class="flex gap-2"><button data-id="${goal.id}" class="delete-goal-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><div class="mt-4"><div class="flex justify-between mb-1"><span class="text-slate-700">${goal.unit === 'R$' ? formatCurrency(goal.current) : goal.current} / ${goal.unit === 'R$' ? formatCurrency(goal.target) : goal.target} ${goal.unit !== '%' && goal.unit !== 'R$' ? goal.unit : ''}</span><span class="text-slate-500">${percentage}%</span></div><div class="w-full bg-slate-200 rounded-full h-2.5"><div class="${categoryColors[goal.category] || 'bg-slate-500'} h-2.5 rounded-full" style="width: ${percentage}%"></div></div></div></div>`;
+            const percentage = goal.target > 0 ? Math.min(100, Math.round((goal.current / goal.target) * 100)) : 0;
+            return `<div class="bg-white p-6 rounded-lg shadow-sm"><div class="flex justify-between items-start"><div><h3 class="text-xl font-semibold text-slate-700">${goal.category}</h3><p class="text-slate-600 mt-1">${goal.text}</p></div><div class="flex gap-2"><button data-id="${goal.id}" class="edit-goal-btn text-slate-400 hover:text-indigo-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${goal.id}" class="delete-goal-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div><div class="mt-4"><div class="flex justify-between mb-1"><span class="text-slate-700">${goal.unit === 'R$' ? formatCurrency(goal.current) : goal.current} / ${goal.unit === 'R$' ? formatCurrency(goal.target) : goal.target} ${goal.unit !== '%' && goal.unit !== 'R$' ? goal.unit : ''}</span><span class="text-slate-500">${percentage}%</span></div><div class="w-full bg-slate-200 rounded-full h-2.5"><div class="${categoryColors[goal.category] || 'bg-slate-500'} h-2.5 rounded-full" style="width: ${percentage}%"></div></div></div></div>`;
         }).join('');
     }
-    
+
     // ===================================================================
     // 7. SETUP DE EVENTOS
     // ===================================================================
     function setupEventListeners() {
-        // Menu e Autenticação
         openMenuBtn.addEventListener('click', () => toggleMenu(true));
         closeMenuBtn.addEventListener('click', () => toggleMenu(false));
         menuOverlay.addEventListener('click', () => toggleMenu(false));
         $('#auth-login-btn').addEventListener('click', () => showAuthModal('login'));
         $('#auth-signup-btn').addEventListener('click', () => showAuthModal('signup'));
         $('#auth-logout-btn').addEventListener('click', signOut);
-
-        // Navegação
         navMenu.addEventListener('click', (e) => {
             const link = e.target.closest('a');
             if (link) {
                 e.preventDefault();
                 showPage(link.getAttribute('href'));
-                if (window.innerWidth <= 768) { toggleMenu(false); }
+                if (window.innerWidth <= 768) toggleMenu(false);
             }
         });
+        
         modalCloseBtn.addEventListener('click', closeModal);
+        modalFormContent.addEventListener('click', async (e) => {
+            const target = e.target;
+            const dateString = modalFormContent.dataset.currentDate;
+            if (target.classList.contains('delete-reminder-btn')) {
+                const id = target.dataset.id;
+                if (id && dateString) {
+                    await supabaseClient.from('month_reminders').delete().eq('id', id);
+                    await refreshDataAndRender();
+                    showRemindersForDate(dateString);
+                }
+            }
 
-        // Notepad
+            if (target.matches('button[type="submit"]') && target.closest('form')?.id === 'add-reminder-form') {
+                e.preventDefault(); 
+                const form = target.closest('form');
+                const textInput = form.querySelector('#new-reminder-text');
+
+                if (textInput && textInput.value.trim() && dateString) {
+                    target.disabled = true;
+                    target.textContent = 'Salvando...';
+                    await supabaseClient.from('month_reminders').insert({
+                        profile_id: currentProfileId,
+                        reminder_date: dateString,
+                        text: textInput.value.trim()
+                    });
+                    await refreshDataAndRender();
+                    showRemindersForDate(dateString);
+                }
+            }
+        });
+
         $('#notepad').addEventListener('input', async (e) => {
             if (!currentProfileId) return;
             await supabaseClient.from('notepad').upsert({ profile_id: currentProfileId, content: e.target.value });
         });
+        $('#prev-month-btn').addEventListener('click', () => {
+            displayedDate.setMonth(displayedDate.getMonth() - 1);
+            renderCalendar();
+        });
+        $('#next-month-btn').addEventListener('click', () => {
+            displayedDate.setMonth(displayedDate.getMonth() + 1);
+            renderCalendar();
+        });
+        $('#calendar-grid').addEventListener('click', (e) => {
+            const dayCell = e.target.closest('.day-cell');
+            if (dayCell && dayCell.dataset.date) {
+                showRemindersForDate(dayCell.dataset.date);
+            }
+        });
+        $('#dashboard').addEventListener('click', (e) => {
+            const button = e.target.closest('.goto-reminder-btn');
+            if (button && button.dataset.date) {
+                displayedDate = new Date(button.dataset.date + 'T12:00:00');
+                showPage('#month');
+            }
+        });
 
-        // --- CRUDs ---
         setupCrudListeners();
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     function setupCrudListeners() {
-        // Day Tasks
+        
         $('#add-day-task-btn').addEventListener('click', () => {
-            if (!currentProfileId) return showAlert("Faça login para adicionar tarefas.");
-            openCrudModal({ title: 'Nova Tarefa do Dia', formHtml: `<input name="text" placeholder="Descrição" class="w-full p-2 border rounded">`,
+            if (!checkLogin()) return;
+            openCrudModal({ title: 'Nova Tarefa', formHtml: `<input name="text" placeholder="Descrição" class="w-full p-2 border rounded">`,
                 onSave: async (data) => {
                     if (!data.text) return;
                     await supabaseClient.from('day_tasks').insert({ text: data.text, profile_id: currentProfileId });
@@ -695,18 +960,60 @@ document.addEventListener('DOMContentLoaded', async () => {
             const button = e.target.closest('button, input');
             if (!button?.dataset.id) return;
             const id = button.dataset.id;
+            
             if (button.matches('.delete-day-task-btn')) {
                 await supabaseClient.from('day_tasks').delete().eq('id', id);
             } else if (button.matches('.day-task-check')) {
                 const task = state.dayTasks.find(t => t.id == id);
                 await supabaseClient.from('day_tasks').update({ completed: !task.completed }).eq('id', id);
+            } else if (button.matches('.edit-day-task-btn')) {
+                const task = state.dayTasks.find(t => t.id == id);
+                openCrudModal({ title: 'Editar Tarefa', item: task, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if (!data.text) return;
+                        await supabaseClient.from('day_tasks').update({ text: data.text }).eq('id', id);
+                        closeModal(); await refreshDataAndRender();
+                    }
+                });
+                return; 
+            } else if (button.matches('.add-day-subtask-btn')) {
+                openCrudModal({ title: 'Nova Subtarefa', formHtml: `<input name="text" placeholder="Descrição da subtarefa" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if (!data.text) return;
+                        await supabaseClient.from('day_subtasks').insert({ text: data.text, parent_task_id: id, profile_id: currentProfileId });
+                        closeModal(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            } else if (button.matches('.delete-day-subtask-btn')) {
+                await supabaseClient.from('day_subtasks').delete().eq('id', id);
+            } else if (button.matches('.day-subtask-check')) {
+                let subtaskToUpdate;
+                for(const task of state.dayTasks) {
+                    const found = task.day_subtasks.find(st => st.id == id);
+                    if(found) { subtaskToUpdate = found; break; }
+                }
+                await supabaseClient.from('day_subtasks').update({ completed: !subtaskToUpdate.completed }).eq('id', id);
+            } else if (button.matches('.edit-day-subtask-btn')) {
+                const taskId = button.dataset.taskId;
+                const task = state.dayTasks.find(t => t.id == taskId);
+                const subtask = task.day_subtasks.find(st => st.id == id);
+                openCrudModal({ title: 'Editar Subtarefa', item: subtask, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if (!data.text) return;
+                        await supabaseClient.from('day_subtasks').update({ text: data.text }).eq('id', id);
+                        closeModal(); await refreshDataAndRender();
+                    }
+                });
+                return;
             }
+            
             await refreshDataAndRender();
         });
 
         // Day Highlights
         $('#add-highlight-btn').addEventListener('click', () => {
-            if (!currentProfileId) return showAlert("Faça login para adicionar destaques.");
+            if (!checkLogin()) return;
             openCrudModal({ title: 'Novo Destaque', formHtml: `<input name="text" placeholder="Destaque do dia" class="w-full p-2 border rounded">`,
                 onSave: async (data) => {
                     if(!data.text) return;
@@ -716,15 +1023,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
         $('#highlights-list').addEventListener('click', async (e) => {
-            const button = e.target.closest('.delete-highlight-btn');
+            const button = e.target.closest('button');
             if (!button?.dataset.id) return;
-            await supabaseClient.from('day_highlights').delete().eq('id', button.dataset.id);
+            const id = button.dataset.id;
+            const highlight = state.dayHighlights.find(h => h.id == id);
+            if (button.matches('.delete-highlight-btn')) {
+                await supabaseClient.from('day_highlights').delete().eq('id', id);
+            } else if (button.matches('.edit-highlight-btn')) {
+                openCrudModal({ title: 'Editar Destaque', item: highlight, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('day_highlights').update({ text: data.text }).eq('id', id);
+                        closeModal(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
             await refreshDataAndRender();
         });
 
         // Week Goals
         $('#add-week-goal-btn').addEventListener('click', () => {
-            if (!currentProfileId) return showAlert("Faça login para adicionar objetivos.");
+            if (!checkLogin()) return;
             openCrudModal({ title: 'Novo Objetivo Semanal', formHtml: `<input name="text" placeholder="Descrição do objetivo" class="w-full p-2 border rounded">`,
                 onSave: async (data) => {
                     if(!data.text) return;
@@ -734,15 +1054,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
         $('#week-goals-list').addEventListener('click', async (e) => {
-            const button = e.target.closest('.delete-week-goal-btn');
+            const button = e.target.closest('button');
             if (!button?.dataset.id) return;
-            await supabaseClient.from('week_goals').delete().eq('id', button.dataset.id);
+            const id = button.dataset.id;
+            const goal = state.weekGoals.find(g => g.id == id);
+            if (button.matches('.delete-week-goal-btn')) {
+                await supabaseClient.from('week_goals').delete().eq('id', id);
+            } else if (button.matches('.edit-week-goal-btn')) {
+                openCrudModal({ title: 'Editar Objetivo', item: goal, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('week_goals').update({ text: data.text }).eq('id', id);
+                        closeModal(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
             await refreshDataAndRender();
         });
 
         // Habits
         $('#add-habit-btn').addEventListener('click', () => {
-            if (!currentProfileId) return showAlert("Faça login para adicionar hábitos.");
+            if (!checkLogin()) return;
             openCrudModal({ title: 'Novo Hábito', formHtml: `<input name="text" placeholder="Descrição do hábito" class="w-full p-2 border rounded">`,
                 onSave: async (data) => {
                     if(!data.text) return;
@@ -752,21 +1085,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
         $('#habits-list').addEventListener('click', async (e) => {
-            const el = e.target.closest('.delete-habit-btn, .habit-check');
+            const el = e.target.closest('button, input');
             if (!el?.dataset.id) return;
             const id = el.dataset.id;
+            const habit = state.habits.find(h => h.id == id);
             if (el.matches('.delete-habit-btn')) {
                 await supabaseClient.from('habits').delete().eq('id', id);
             } else if (el.matches('.habit-check')) {
-                const habit = state.habits.find(h => h.id == id);
                 await supabaseClient.from('habits').update({ completed: !habit.completed }).eq('id', id);
+            } else if (el.matches('.edit-habit-btn')) {
+                openCrudModal({ title: 'Editar Hábito', item: habit, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('habits').update({ text: data.text }).eq('id', id);
+                        closeModal(); await refreshDataAndRender();
+                    }
+                });
+                return;
             }
             await refreshDataAndRender();
         });
         
         // Month Achievements
         $('#add-achievement-btn').addEventListener('click', () => {
-            if (!currentProfileId) return showAlert("Faça login para adicionar conquistas.");
+            if (!checkLogin()) return;
             openCrudModal({ title: 'Nova Conquista', formHtml: `<input name="text" placeholder="Descrição da conquista" class="w-full p-2 border rounded">`,
                 onSave: async(data) => {
                     if(!data.text) return;
@@ -776,44 +1118,70 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
         $('#achievements-list').addEventListener('click', async (e) => {
-            const button = e.target.closest('.delete-achievement-btn');
+            const button = e.target.closest('button');
             if (!button?.dataset.id) return;
-            await supabaseClient.from('month_achievements').delete().eq('id', button.dataset.id);
+            const id = button.dataset.id;
+            const achievement = state.monthAchievements.find(a => a.id == id);
+            if (button.matches('.delete-achievement-btn')) {
+                await supabaseClient.from('month_achievements').delete().eq('id', id);
+            } else if (button.matches('.edit-achievement-btn')) {
+                openCrudModal({ title: 'Editar Conquista', item: achievement, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async(data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('month_achievements').update({ text: data.text }).eq('id', id);
+                        closeModal(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
             await refreshDataAndRender();
         });
 
         // Finance
-        const transactionFormHtml = (type) => `<input type="text" name="description" placeholder="Descrição" class="w-full p-2 border rounded"><input type="text" name="category" placeholder="Categoria" class="w-full p-2 border rounded"><input type="number" name="amount" placeholder="Valor" step="0.01" class="w-full p-2 border rounded"><input type="hidden" name="type" value="${type}">`;
+        const transactionFormHtml = `<input type="text" name="description" placeholder="Descrição" class="w-full p-2 border rounded"><input type="text" name="category" placeholder="Categoria" class="w-full p-2 border rounded"><input type="number" name="amount" placeholder="Valor" step="0.01" class="w-full p-2 border rounded">`;
         $('#add-income-btn').addEventListener('click', () => {
-            if (!currentProfileId) return showAlert("Faça login para adicionar transações.");
-            openCrudModal({ title: 'Nova Receita', formHtml: transactionFormHtml('income'),
+            if (!checkLogin()) return;
+            openCrudModal({ title: 'Nova Receita', formHtml: transactionFormHtml,
                 onSave: async (data) => {
                     if(!data.description || !data.amount) return;
-                    await supabaseClient.from('transactions').insert({ ...data, profile_id: currentProfileId });
+                    await supabaseClient.from('transactions').insert({ ...data, type: 'income', profile_id: currentProfileId });
                     closeModal(); await refreshDataAndRender();
                 }
             });
         });
         $('#add-expense-btn').addEventListener('click', () => {
-            if (!currentProfileId) return showAlert("Faça login para adicionar transações.");
-            openCrudModal({ title: 'Nova Despesa', formHtml: transactionFormHtml('expense'),
+            if (!checkLogin()) return;
+            openCrudModal({ title: 'Nova Despesa', formHtml: transactionFormHtml,
                 onSave: async (data) => {
                     if(!data.description || !data.amount) return;
-                    await supabaseClient.from('transactions').insert({ ...data, profile_id: currentProfileId });
+                    await supabaseClient.from('transactions').insert({ ...data, type: 'expense', profile_id: currentProfileId });
                     closeModal(); await refreshDataAndRender();
                 }
             });
         });
         $('#transactions-table-body').addEventListener('click', async (e) => {
-            const button = e.target.closest('.delete-transaction-btn');
+            const button = e.target.closest('button');
             if (!button?.dataset.id) return;
-            await supabaseClient.from('transactions').delete().eq('id', button.dataset.id);
+            const id = button.dataset.id;
+            const transaction = state.transactions.find(t => t.id == id);
+            if (button.matches('.delete-transaction-btn')) {
+                await supabaseClient.from('transactions').delete().eq('id', id);
+            } else if (button.matches('.edit-transaction-btn')) {
+                openCrudModal({ title: 'Editar Transação', item: transaction, formHtml: transactionFormHtml,
+                    onSave: async (data) => {
+                        if(!data.description || !data.amount) return;
+                        await supabaseClient.from('transactions').update(data).eq('id', id);
+                        closeModal(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
             await refreshDataAndRender();
         });
         
         // Shopping
         $$('.add-shopping-item-btn').forEach(btn => btn.addEventListener('click', (e) => {
-            if (!currentProfileId) return showAlert("Faça login para adicionar itens.");
+            if (!checkLogin()) return;
             const category = e.target.dataset.category;
             openCrudModal({ title: `Novo Item - ${category}`, formHtml: `<input name="text" placeholder="Nome do item" class="w-full p-2 border rounded">`,
                 onSave: async (data) => {
@@ -824,14 +1192,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }));
         $('#buy').addEventListener('click', async (e) => {
-            const el = e.target.closest('.delete-shopping-item-btn, .shopping-item-check');
+            const el = e.target.closest('button, input');
             if (!el?.dataset.id) return;
             const id = el.dataset.id;
+            const item = state.shoppingList.find(i => i.id == id);
             if (el.matches('.delete-shopping-item-btn')) {
                 await supabaseClient.from('shopping_list').delete().eq('id', id);
             } else if (el.matches('.shopping-item-check')) {
-                const item = state.shoppingList.find(i => i.id == id);
                 await supabaseClient.from('shopping_list').update({ completed: !item.completed }).eq('id', id);
+            } else if (el.matches('.edit-shopping-item-btn')) {
+                openCrudModal({ title: 'Editar Item', item, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async(data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('shopping_list').update({text: data.text}).eq('id', id);
+                        closeModal(); await refreshDataAndRender();
+                    }
+                });
+                return;
             }
             await refreshDataAndRender();
         });
@@ -839,7 +1216,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // To-Do
         const todoFormHtml = `<input type="text" name="text" placeholder="Descrição da tarefa" class="w-full p-2 border rounded"><select name="priority" class="w-full p-2 border rounded"><option value="baixa">Baixa</option><option value="media">Média</option><option value="alta">Alta</option></select><select name="status" class="w-full p-2 border rounded"><option value="pendente">Pendente</option><option value="andamento">Em Andamento</option><option value="concluido">Concluído</option></select>`;
         $('#add-todo-btn').addEventListener('click', () => {
-            if (!currentProfileId) return showAlert("Faça login para adicionar tarefas.");
+            if (!checkLogin()) return;
             openCrudModal({ title: 'Nova Tarefa', formHtml: todoFormHtml,
                 onSave: async (data) => {
                     if(!data.text) return;
@@ -849,16 +1226,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
         $('#todo-table-body').addEventListener('click', async (e) => {
-            const button = e.target.closest('.delete-todo-btn');
+            const button = e.target.closest('button');
             if (!button?.dataset.id) return;
-            await supabaseClient.from('todos').delete().eq('id', button.dataset.id);
+            const id = button.dataset.id;
+            const todo = state.todos.find(t => t.id == id);
+            if (button.matches('.delete-todo-btn')) {
+                await supabaseClient.from('todos').delete().eq('id', id);
+            } else if (button.matches('.edit-todo-btn')) {
+                openCrudModal({ title: 'Editar Tarefa', item: todo, formHtml: todoFormHtml,
+                    onSave: async(data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('todos').update(data).eq('id', id);
+                        closeModal(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
             await refreshDataAndRender();
         });
         
         // Goals
         const goalFormHtml = `<input type="text" name="text" placeholder="Descrição da meta" class="w-full p-2 border rounded"><select name="category" class="w-full p-2 border rounded"><option>Financeira</option><option>Saúde</option><option>Estudos</option><option>Pessoal</option></select><input type="number" name="current" placeholder="Valor Atual" class="w-full p-2 border rounded" step="any"><input type="number" name="target" placeholder="Valor Alvo" class="w-full p-2 border rounded" step="any"><input type="text" name="unit" placeholder="Unidade (ex: R$, km, %)" class="w-full p-2 border rounded">`;
         $('#add-goal-btn').addEventListener('click', () => {
-            if (!currentProfileId) return showAlert("Faça login para adicionar metas.");
+            if (!checkLogin()) return;
             openCrudModal({ title: 'Nova Meta', formHtml: goalFormHtml,
                 onSave: async (data) => {
                     if(!data.text || !data.target) return;
@@ -868,9 +1258,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
         $('#goals-list').addEventListener('click', async (e) => {
-            const button = e.target.closest('.delete-goal-btn');
+            const button = e.target.closest('button');
             if (!button?.dataset.id) return;
-            await supabaseClient.from('goals').delete().eq('id', button.dataset.id);
+            const id = button.dataset.id;
+            const goal = state.goals.find(g => g.id == id);
+            if (button.matches('.delete-goal-btn')) {
+                await supabaseClient.from('goals').delete().eq('id', id);
+            } else if (button.matches('.edit-goal-btn')) {
+                openCrudModal({ title: 'Editar Meta', item: goal, formHtml: goalFormHtml,
+                    onSave: async (data) => {
+                        if(!data.text || !data.target) return;
+                        await supabaseClient.from('goals').update(data).eq('id', id);
+                        closeModal(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
             await refreshDataAndRender();
         });
     }
