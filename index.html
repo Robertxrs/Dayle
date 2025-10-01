@@ -51,6 +51,16 @@
         .day-cell.is-today:hover {
             background-color: #4338ca; 
         }
+
+         #menu-container {
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+            }
+            #nav-menu {
+                overflow-y: auto;
+                flex-grow: 1;
+            }
         @media (max-width: 768px) {
             #menu-container {
                 position: fixed;
@@ -70,6 +80,7 @@
                 padding-right: 1.5rem;
             }
         }
+
     </style>
 </head>
 <body class="bg-slate-100">
@@ -523,14 +534,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isLogin = type === 'login';
         openModal({
             title: isLogin ? 'Login' : 'Cadastro',
-            formHtml: `<input type="email" id="auth-email" placeholder="seu@email.com" class="w-full p-2 border rounded" autocomplete="email"><input type="password" id="auth-password" placeholder="Sua senha (mín. 6 caracteres)" class="w-full p-2 border rounded" autocomplete="current-password">`,
-            buttonsHtml: `<button id="modal-cancel-auth" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Cancelar</button><button id="modal-confirm-auth" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">${isLogin ? 'Entrar' : 'Cadastrar'}</button>`
+            formHtml: `
+                <form id="auth-form">
+                    <input type="email" id="auth-email" placeholder="seu@email.com" class="w-full p-2 border rounded mb-4" autocomplete="email">
+                    <input type="password" id="auth-password" placeholder="Sua senha (mín. 6 caracteres)" class="w-full p-2 border rounded" autocomplete="current-password">
+                </form>
+            `,
+            buttonsHtml: `
+                <button id="modal-cancel-auth" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Cancelar</button>
+                <button id="modal-confirm-auth" type="submit" form="auth-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">${isLogin ? 'Entrar' : 'Cadastrar'}</button>
+            `
         });
+
         $('#modal-cancel-auth').addEventListener('click', closeModal);
-        $('#modal-confirm-auth').addEventListener('click', () => {
+        $('#auth-form').addEventListener('submit', (e) => {
+            e.preventDefault();
             const email = $('#auth-email').value;
             const password = $('#auth-password').value;
             if (!email || !password) return showAlert("Por favor, preencha e-mail e senha.");
+            
             if (isLogin) signIn(email, password);
             else signUp(email, password);
         });
@@ -587,14 +609,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ===================================================================
     const navLinks = $$('.nav-link'), pages = $$('.page'), navMenu = $('#nav-menu');
     let expensesChartInstance = null;
-    function showPage(targetId) {
+
+    function showPage(targetId, updateHistory = true) {
         navLinks.forEach(link => {
             link.classList.toggle('bg-indigo-600', link.getAttribute('href') === targetId);
             link.classList.toggle('text-white', link.getAttribute('href') === targetId);
             link.classList.toggle('text-slate-300', link.getAttribute('href') !== targetId);
         });
         pages.forEach(page => page.classList.toggle('active', `#${page.id}` === targetId));
-        window.history.pushState(null, '', targetId);
+        if (updateHistory) {
+            window.history.pushState(null, '', targetId);
+        }
         renderAll();
     }
 
@@ -921,6 +946,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showPage(link.getAttribute('href'));
                 if (window.innerWidth <= 768) toggleMenu(false);
             }
+        });
+        window.addEventListener('popstate', (e) => {
+            const hash = window.location.hash || '#dashboard';
+            showPage(hash, false); 
         });
         
         modalCloseBtn.addEventListener('click', closeModal);
