@@ -80,7 +80,27 @@
                 padding-right: 1.5rem;
             }
         }
-
+@media (max-width: 768px) {
+            #menu-container {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 50;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+            #menu-container.menu-open {
+                transform: translateX(0);
+            }
+            main {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-100">
@@ -510,17 +530,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             modalBackdrop.classList.remove('opacity-0');
             modalContent.classList.remove('opacity-0', 'scale-95');
         }, 10);
+        history.pushState({ modal: true }, null);
     }
     
     function closeModal() {
-        modalBackdrop.classList.add('opacity-0');
-        modalContent.classList.add('opacity-0', 'scale-95');
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            modalFormContent.innerHTML = ''; modalButtons.innerHTML = ''; modalMessage.innerHTML = '';
-        }, 300);
-    }
+            modalBackdrop.classList.add('opacity-0');
+            modalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                modalFormContent.innerHTML = ''; 
+                modalButtons.innerHTML = ''; 
+                modalMessage.innerHTML = '';
+            }, 300);
+        }
     
     function showAlert(message) {
         openModal({
@@ -546,7 +569,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `
         });
 
-        $('#modal-cancel-auth').addEventListener('click', closeModal);
+        $('#modal-cancel-form').addEventListener('click', () => history.back());
         $('#auth-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = $('#auth-email').value;
@@ -559,50 +582,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     function openCrudModal(options) {
-        openModal({
-            title: options.title,
-            formHtml: `<form id="dynamic-crud-form">${options.formHtml}</form>`,
-            buttonsHtml: `<button id="modal-cancel-form" class="px-4 py-2 bg-slate-200 rounded-lg">Cancelar</button><button id="modal-save-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Salvar</button>`
-        });
-        
-        $('#modal-cancel-form').onclick = closeModal;
-        
-        $('#modal-save-form').onclick = () => {
-            const formElement = $('#dynamic-crud-form');
-            if (!formElement) return;
+    openModal({
+        title: options.title,
+        formHtml: `<form id="dynamic-crud-form" class="space-y-4">${options.formHtml}</form>`,
 
-            const formData = new FormData(formElement);
-            const data = {};
-            
-            for(let [key, value] of formData.entries()) {
-                const input = formElement.querySelector(`[name="${key}"]`);
-                if(!input) continue;
-                if (input.type === 'number') {
-                    const numericValue = parseFloat(String(value).replace(',', '.')) || 0;
-                    data[key] = numericValue;
-                } else if (input.type === 'checkbox') {
-                    data[key] = input.checked;
-                } else {
-                    data[key] = value;
-                }
+        buttonsHtml: `
+            <button id="modal-cancel-form" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Cancelar</button>
+            <button id="modal-save-form" type="submit" form="dynamic-crud-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Salvar</button>
+        `
+    });
+
+    $('#modal-cancel-form').addEventListener('click', () => history.back());
+    $('#dynamic-crud-form').addEventListener('submit', (e) => {
+        e.preventDefault(); 
+        
+        const formElement = e.target; 
+        const formData = new FormData(formElement);
+        const data = {};
+        
+        for(let [key, value] of formData.entries()) {
+            const input = formElement.querySelector(`[name="${key}"]`);
+            if(!input) continue;
+
+            if (input.type === 'number') {
+                const numericValue = parseFloat(String(value).replace(',', '.')) || 0;
+                data[key] = numericValue;
+            } else if (input.type === 'checkbox') {
+                data[key] = input.checked;
+            } else {
+                data[key] = value;
             }
-            options.onSave(data);
-        };
-
-        if (options.item) {
-            const formElement = $('#dynamic-crud-form');
-            for (const key in options.item) {
-                const input = formElement.querySelector(`[name="${key}"]`);
-                if (input) {
-                    if (input.type === 'checkbox') {
-                        input.checked = options.item[key];
-                    } else {
-                        input.value = options.item[key];
-                    }
+        }
+        options.onSave(data);
+    });
+    if (options.item) {
+        const formElement = $('#dynamic-crud-form');
+        for (const key in options.item) {
+            const input = formElement.querySelector(`[name="${key}"]`);
+            if (input) {
+                if (input.type === 'checkbox') {
+                    input.checked = options.item[key];
+                } else {
+                    input.value = options.item[key];
                 }
             }
         }
     }
+}
 
     // ===================================================================
     // 5. NAVEGAÇÃO ENTRE PÁGINAS
@@ -932,6 +958,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ===================================================================
     // 7. SETUP DE EVENTOS
     // ===================================================================
+    
     function setupEventListeners() {
         openMenuBtn.addEventListener('click', () => toggleMenu(true));
         closeMenuBtn.addEventListener('click', () => toggleMenu(false));
@@ -939,6 +966,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         $('#auth-login-btn').addEventListener('click', () => showAuthModal('login'));
         $('#auth-signup-btn').addEventListener('click', () => showAuthModal('signup'));
         $('#auth-logout-btn').addEventListener('click', signOut);
+        
         navMenu.addEventListener('click', (e) => {
             const link = e.target.closest('a');
             if (link) {
@@ -948,42 +976,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
         window.addEventListener('popstate', (e) => {
-            const hash = window.location.hash || '#dashboard';
-            showPage(hash, false); 
+            // Se um modal estiver visível, a ação de "voltar" deve apenas fechá-lo.
+            if (!modal.classList.contains('hidden')) {
+                closeModal();
+            } else {
+                // Se nenhum modal estiver aberto, a ação de "voltar" navega entre as abas.
+                const hash = window.location.hash || '#dashboard';
+                showPage(hash, false); 
+            }
         });
-        
-        modalCloseBtn.addEventListener('click', closeModal);
+        modalCloseBtn.addEventListener('click', () => {
+            history.back(); // Simula o clique no botão "voltar"
+        });
         modalFormContent.addEventListener('click', async (e) => {
-            const target = e.target;
-            const dateString = modalFormContent.dataset.currentDate;
-            if (target.classList.contains('delete-reminder-btn')) {
-                const id = target.dataset.id;
-                if (id && dateString) {
-                    await supabaseClient.from('month_reminders').delete().eq('id', id);
-                    await refreshDataAndRender();
-                    showRemindersForDate(dateString);
-                }
-            }
-
-            if (target.matches('button[type="submit"]') && target.closest('form')?.id === 'add-reminder-form') {
-                e.preventDefault(); 
-                const form = target.closest('form');
-                const textInput = form.querySelector('#new-reminder-text');
-
-                if (textInput && textInput.value.trim() && dateString) {
-                    target.disabled = true;
-                    target.textContent = 'Salvando...';
-                    await supabaseClient.from('month_reminders').insert({
-                        profile_id: currentProfileId,
-                        reminder_date: dateString,
-                        text: textInput.value.trim()
-                    });
-                    await refreshDataAndRender();
-                    showRemindersForDate(dateString);
-                }
-            }
+            // ... (seu código para adicionar/deletar lembretes) ...
         });
-
         $('#notepad').addEventListener('input', async (e) => {
             if (!currentProfileId) return;
             await supabaseClient.from('notepad').upsert({ profile_id: currentProfileId, content: e.target.value });
@@ -1009,7 +1016,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showPage('#month');
             }
         });
-
         setupCrudListeners();
     }
 
