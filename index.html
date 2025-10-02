@@ -532,18 +532,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 10);
         history.pushState({ modal: true }, null);
     }
-    
+
     function closeModal() {
-            modalBackdrop.classList.add('opacity-0');
-            modalContent.classList.add('opacity-0', 'scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                modalFormContent.innerHTML = ''; 
-                modalButtons.innerHTML = ''; 
-                modalMessage.innerHTML = '';
-            }, 300);
-        }
+        modalBackdrop.classList.add('opacity-0');
+        modalContent.classList.add('opacity-0', 'scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            modalFormContent.innerHTML = '';
+            modalButtons.innerHTML = ''; 
+            modalMessage.innerHTML = '';
+        }, 300);
+    }
     
     function showAlert(message) {
         openModal({
@@ -569,7 +569,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             `
         });
 
-        $('#modal-cancel-form').addEventListener('click', () => history.back());
+        $('#modal-cancel-auth').addEventListener('click', () => history.back());
+        
         $('#auth-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = $('#auth-email').value;
@@ -580,55 +581,51 @@ document.addEventListener('DOMContentLoaded', async () => {
             else signUp(email, password);
         });
     }
-    
+
     function openCrudModal(options) {
-    openModal({
-        title: options.title,
-        formHtml: `<form id="dynamic-crud-form" class="space-y-4">${options.formHtml}</form>`,
-
-        buttonsHtml: `
-            <button id="modal-cancel-form" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Cancelar</button>
-            <button id="modal-save-form" type="submit" form="dynamic-crud-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Salvar</button>
-        `
-    });
-
-    $('#modal-cancel-form').addEventListener('click', () => history.back());
-    $('#dynamic-crud-form').addEventListener('submit', (e) => {
-        e.preventDefault(); 
+        openModal({
+            title: options.title,
+            formHtml: `<form id="dynamic-crud-form" class="space-y-4">${options.formHtml}</form>`,
+            buttonsHtml: `
+                <button id="modal-cancel-form" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Cancelar</button>
+                <button id="modal-save-form" type="submit" form="dynamic-crud-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Salvar</button>
+            `
+        });
         
-        const formElement = e.target; 
-        const formData = new FormData(formElement);
-        const data = {};
+        $('#modal-cancel-form').addEventListener('click', () => history.back());
         
-        for(let [key, value] of formData.entries()) {
-            const input = formElement.querySelector(`[name="${key}"]`);
-            if(!input) continue;
-
-            if (input.type === 'number') {
-                const numericValue = parseFloat(String(value).replace(',', '.')) || 0;
-                data[key] = numericValue;
-            } else if (input.type === 'checkbox') {
-                data[key] = input.checked;
-            } else {
-                data[key] = value;
-            }
-        }
-        options.onSave(data);
-    });
-    if (options.item) {
-        const formElement = $('#dynamic-crud-form');
-        for (const key in options.item) {
-            const input = formElement.querySelector(`[name="${key}"]`);
-            if (input) {
-                if (input.type === 'checkbox') {
-                    input.checked = options.item[key];
+        $('#dynamic-crud-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formElement = e.target;
+            const formData = new FormData(formElement);
+            const data = {};
+            
+            for(let [key, value] of formData.entries()) {
+                const input = formElement.querySelector(`[name="${key}"]`);
+                if(!input) continue;
+                if (input.type === 'number') {
+                    const numericValue = parseFloat(String(value).replace(',', '.')) || 0;
+                    data[key] = numericValue;
+                } else if (input.type === 'checkbox') {
+                    data[key] = input.checked;
                 } else {
-                    input.value = options.item[key];
+                    data[key] = value;
+                }
+            }
+            options.onSave(data);
+        });
+
+        if (options.item) {
+            const formElement = $('#dynamic-crud-form');
+            for (const key in options.item) {
+                const input = formElement.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === 'checkbox') input.checked = options.item[key];
+                    else input.value = options.item[key];
                 }
             }
         }
     }
-}
 
     // ===================================================================
     // 5. NAVEGAÇÃO ENTRE PÁGINAS
