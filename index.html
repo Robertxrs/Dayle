@@ -29,7 +29,6 @@
         .modal-content {
             transition: transform 0.3s ease;
         }
-
         .day-cell {
             cursor: pointer;
             transition: background-color 0.2s;
@@ -39,7 +38,7 @@
             background-color: #eef2ff;
         }
         .day-cell.has-reminder {
-            background-color: #fef9c3;
+            background-color: #fecaca;
             font-weight: bold;
             color: #991b1b;
             position: relative;
@@ -52,15 +51,16 @@
             background-color: #4338ca; 
         }
 
-         #menu-container {
-                display: flex;
-                flex-direction: column;
-                height: 100vh;
-            }
-            #nav-menu {
-                overflow-y: auto;
-                flex-grow: 1;
-            }
+        #menu-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #nav-menu {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        
         @media (max-width: 768px) {
             #menu-container {
                 position: fixed;
@@ -70,7 +70,6 @@
                 z-index: 50;
                 transform: translateX(-100%);
                 transition: transform 0.3s ease-in-out;
-                height: 100vh;
             }
             #menu-container.menu-open {
                 transform: translateX(0);
@@ -78,27 +77,6 @@
             main {
                 padding-left: 1.5rem;
                 padding-right: 1.5rem;
-            }
-        }
-@media (max-width: 768px) {
-            #menu-container {
-                position: fixed;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                z-index: 50;
-                transform: translateX(-100%);
-                transition: transform 0.3s ease-in-out;
-                height: 100vh;
-                display: flex;
-                flex-direction: column;
-            #menu-container.menu-open {
-                transform: translateX(0);
-            }
-            main {
-                padding-left: 1.5rem;
-                padding-right: 1.5rem;
-            }
             }
         }
     </style>
@@ -139,6 +117,9 @@
                 </a>
                 <a href="#goals" class="nav-link text-slate-300 flex items-center gap-3 px-4 py-2 rounded-lg transition-colors hover:bg-slate-700">
                     <span>Metas</span>
+                </a>
+                <a href="#notes" class="nav-link text-slate-300 flex items-center gap-3 px-4 py-2 rounded-lg transition-colors hover:bg-slate-700">
+                    <span>Bloco de Notas</span>
                 </a>
             </nav>
             <div class="mt-auto p-4 border-t border-slate-700" id="menu-perfil">
@@ -356,13 +337,23 @@
                 </div>
             </section>
 
-
             <section id="goals" class="page">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-3xl font-bold text-slate-800">🎯 Metas</h2>
                     <button id="add-goal-btn" class="w-full sm:w-auto bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">Adicionar Meta</button>
                 </div>
                 <div id="goals-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </section>
+            
+            <section id="notes" class="page h-full flex flex-col">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6">📝 Bloco de Notas</h2>
+                <div class="bg-white p-6 rounded-lg shadow-sm flex-grow flex">
+                    <textarea 
+                        id="main-notepad" 
+                        class="w-full h-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition resize-none" 
+                        placeholder="Suas anotações, listas e ideias... tudo salvo automaticamente."
+                    ></textarea>
+                </div>
             </section>
         </main>
     </div>
@@ -460,17 +451,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             supabaseClient.from('todos').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('goals').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('month_reminders').select('*').eq('profile_id', profileId),
-            supabaseClient.from('shopping_categories').select('*').eq('profile_id', profileId).order('created_at')
+            supabaseClient.from('shopping_categories').select('*').eq('profile_id', profileId).order('created_at'),
+            supabaseClient.from('free_notes').select('content').eq('profile_id', profileId).maybeSingle()
         ];
         try {
             const results = await Promise.all(queries);
-            const [ dayTasks, dayHighlights, notepad, weekGoals, habits, monthAchievements, transactions, shoppingList, todos, goals, monthReminders, shoppingCategories ] = results.map(res => res.data);
+            const [ dayTasks, dayHighlights, notepad, weekGoals, habits, monthAchievements, transactions, shoppingList, todos, goals, monthReminders, shoppingCategories, freeNote ] = results.map(res => res.data);
+            
             state = {
-                dayTasks: dayTasks || [], dayHighlights: dayHighlights || [], notepadContent: notepad?.content || '',
-                weekGoals: weekGoals || [], habits: habits || [], monthAchievements: monthAchievements || [],
-                transactions: transactions || [], shoppingList: shoppingList || [], todos: todos || [], goals: goals || [],
+                dayTasks: dayTasks || [], 
+                dayHighlights: dayHighlights || [], 
+                notepadContent: notepad?.content || '',
+                weekGoals: weekGoals || [], 
+                habits: habits || [], 
+                monthAchievements: monthAchievements || [],
+                transactions: transactions || [], 
+                shoppingList: shoppingList || [], 
+                todos: todos || [], 
+                goals: goals || [],
                 monthReminders: monthReminders || [],
-                shoppingCategories: shoppingCategories || [] 
+                shoppingCategories: shoppingCategories || [],
+                freeNoteContent: freeNote?.content || ''
             };
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
@@ -654,6 +655,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderWeekGoals(); renderHabits(); renderMonthAchievements(); renderTransactions();
         renderShoppingList(); renderTodos(); renderGoals(); renderCalendar();
         renderMonthProductivity();
+        renderNotesPage();
     }
     
     function updateDashboard() {
@@ -808,11 +810,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-
-
-
-
-
    async function showRemindersForDate(dateString) {
         if (!checkLogin()) return;
         const date = new Date(dateString + 'T12:00:00');
@@ -822,22 +819,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const renderContent = () => {
             const remindersForDay = state.monthReminders.filter(r => r.reminder_date === dateString);
+            
             const remindersHtml = remindersForDay.length > 0
-                ? `<ul class="space-y-2 mb-4 max-h-40 overflow-y-auto">${remindersForDay.map(r => `<li class="flex justify-between items-center bg-slate-100 p-2 rounded-md text-sm"><span>${r.text}</span><button data-id="${r.id}" class="delete-reminder-btn text-red-500 hover:text-red-700 p-1 font-bold text-lg">&times;</button></li>`).join('')}</ul>`
+                ? `<ul class="space-y-2 mb-4 max-h-40 overflow-y-auto">${remindersForDay.map(r => `
+                    <li class="flex justify-between items-center bg-slate-100 p-2 rounded-md text-sm group">
+                        <span>${r.text}</span>
+                        <div class="hidden group-hover:flex items-center">
+                            <button data-id="${r.id}" class="edit-reminder-btn text-blue-500 hover:text-blue-700 p-1" title="Editar Lembrete">
+                                <svg class="pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>
+                            </button>
+                            <button data-id="${r.id}" class="delete-reminder-btn text-red-500 hover:text-red-700 p-1 font-bold text-lg" title="Excluir Lembrete">&times;</button>
+                        </div>
+                    </li>`).join('')}</ul>`
                 : '<p class="text-slate-500 mb-4">Nenhum lembrete para este dia.</p>';
-            
-            const formHtml = `<form id="add-reminder-form" class="flex gap-2"><input id="new-reminder-text" type="text" placeholder="Novo lembrete..." class="flex-grow p-2 border rounded-md"><button type="submit" class="bg-indigo-600 text-white px-4 rounded-md hover:bg-indigo-700">Adicionar</button></form>`;
-            
+            const formHtml = `<form id="add-reminder-form" class="flex gap-2"><input id="new-reminder-text" type="text" placeholder="Novo lembrete..." class="flex-grow p-2 border rounded-md"><button type="submit" class="bg-indigo-600 text-white px-4 rounded-md hover:bg-indigo-700">Adicionar</button></form>`; 
             modalFormContent.innerHTML = remindersHtml + formHtml;
         };
-
         openModal({
             title: `Lembretes para ${formattedDate}`,
             buttonsHtml: `<button id="modal-close-reminders" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Fechar</button>`
         });
-
         renderContent();
-        $('#modal-close-reminders').addEventListener('click', closeModal, { once: true });
+        $('#modal-close-reminders').addEventListener('click', () => history.back(), { once: true });
     }
 
     function renderTransactions() {
@@ -952,6 +955,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     }
 
+    function renderNotesPage() {
+        const notepad = $('#main-notepad');
+        if (notepad) {
+            notepad.value = state.freeNoteContent || '';
+        }
+    }
+
     // ===================================================================
     // 7. SETUP DE EVENTOS
     // ===================================================================
@@ -973,20 +983,79 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
         window.addEventListener('popstate', (e) => {
-            // Se um modal estiver visível, a ação de "voltar" deve apenas fechá-lo.
             if (!modal.classList.contains('hidden')) {
                 closeModal();
             } else {
-                // Se nenhum modal estiver aberto, a ação de "voltar" navega entre as abas.
                 const hash = window.location.hash || '#dashboard';
                 showPage(hash, false); 
             }
         });
         modalCloseBtn.addEventListener('click', () => {
-            history.back(); // Simula o clique no botão "voltar"
+            history.back();
         });
+        
+        
         modalFormContent.addEventListener('click', async (e) => {
-            // ... (seu código para adicionar/deletar lembretes) ...
+            const target = e.target;
+            const dateString = modalFormContent.dataset.currentDate;
+
+            if (target.matches('button[type="submit"]') && target.closest('form')?.id === 'add-reminder-form') {
+                e.preventDefault(); 
+                const form = target.closest('form');
+                const textInput = form.querySelector('#new-reminder-text');
+
+                if (textInput && textInput.value.trim() && dateString) {
+                    target.disabled = true;
+                    target.textContent = 'Salvando...';
+
+                    await supabaseClient.from('month_reminders').insert({
+                        profile_id: currentProfileId,
+                        reminder_date: dateString,
+                        text: textInput.value.trim()
+                    });
+                    
+                    await refreshDataAndRender();
+                    showRemindersForDate(dateString);
+                }
+            }
+            const deleteButton = target.closest('.delete-reminder-btn');
+            if (deleteButton) {
+                const id = deleteButton.dataset.id;
+                if (id && dateString) {
+                    await supabaseClient.from('month_reminders').delete().eq('id', id);
+                    await refreshDataAndRender();
+                    showRemindersForDate(dateString);
+                }
+            }
+            const editButton = target.closest('.edit-reminder-btn');
+            if (editButton) {
+                const reminderId = editButton.dataset.id;
+                const reminderToEdit = state.monthReminders.find(r => r.id === reminderId);
+                
+                if (reminderToEdit) {
+                    openCrudModal({
+                        title: 'Editar Lembrete',
+                        item: reminderToEdit,
+                        formHtml: `<input name="text" class="w-full p-2 border rounded" value="${reminderToEdit.text}">`,
+                        onSave: async (data) => {
+                            if (!data.text) return;
+                            await supabaseClient.from('month_reminders').update({ text: data.text }).eq('id', reminderId);
+                            closeModal();
+                            await refreshDataAndRender();
+                            showRemindersForDate(dateString); 
+                        }
+                    });
+                }
+            }
+        });
+        
+        
+        $('#day').addEventListener('input', async (e) => {
+            if (e.target.id === 'notepad') {
+                if (!currentProfileId) return;
+                state.notepadContent = e.target.value;
+                await supabaseClient.from('notepad').upsert({ profile_id: currentProfileId, content: e.target.value });
+            }
         });
         $('#notepad').addEventListener('input', async (e) => {
             if (!currentProfileId) return;
@@ -1011,6 +1080,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (button && button.dataset.date) {
                 displayedDate = new Date(button.dataset.date + 'T12:00:00');
                 showPage('#month');
+            }
+        });
+        $('#notes').addEventListener('input', async (e) => {
+            if (e.target.id === 'main-notepad') {
+                if (!currentProfileId) return;
+                state.freeNoteContent = e.target.value;
+                await supabaseClient.from('free_notes').upsert({ profile_id: currentProfileId, content: e.target.value });
             }
         });
         setupCrudListeners();
