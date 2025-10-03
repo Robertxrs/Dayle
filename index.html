@@ -29,11 +29,15 @@
         .modal-content {
             transition: transform 0.3s ease;
         }
+        
+
         .day-cell {
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: transform 0.2s;
             border-radius: 8px;
         }
+
+
         .day-cell:hover {
             background-color: #eef2ff;
         }
@@ -51,6 +55,7 @@
             background-color: #4338ca; 
         }
 
+
         #menu-container {
             display: flex;
             flex-direction: column;
@@ -61,6 +66,7 @@
             flex-grow: 1;
         }
         
+
         @media (max-width: 768px) {
             #menu-container {
                 position: fixed;
@@ -84,7 +90,7 @@
 <body class="bg-slate-100">
 
 
-    <div class="flex h-screen relative overflow-hidden">
+    <div  class="flex h-screen relative overflow-hidden">
         <aside class="w-64 bg-slate-800 text-white flex flex-col flex-shrink-0" id="menu-container">
             <button id="close-menu-btn" class="absolute top-4 right-4 text-slate-400 hover:text-white md:hidden z-10" aria-label="Fechar menu">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -344,17 +350,18 @@
                 </div>
                 <div id="goals-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
             </section>
-            
-            <section id="notes" class="page h-full flex flex-col">
+
+            <section id="notes" class="page h-full flex-col">
                 <h2 class="text-3xl font-bold text-slate-800 mb-6">📝 Bloco de Notas</h2>
                 <div class="bg-white p-6 rounded-lg shadow-sm flex-grow flex">
                     <textarea 
                         id="main-notepad" 
-                        class="w-full h-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition resize-none" 
+                        class="w-full h-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition resize-none min-h-[60vh]" 
                         placeholder="Suas anotações, listas e ideias... tudo salvo automaticamente."
                     ></textarea>
                 </div>
             </section>
+            
         </main>
     </div>
 
@@ -372,13 +379,14 @@
         </div>
     </div>
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
-    // ===================================================================
+    document.addEventListener('DOMContentLoaded', async () => {
+    // ========================================================= ==========
     // 1. CONFIGURAÇÃO E UTILS
     // ===================================================================
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => document.querySelectorAll(selector);
     const formatCurrency = (value) => (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
     function checkLogin() {
         if (!currentProfileId) {
             showAlert("Faça login para usar esta funcionalidade.");
@@ -451,27 +459,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             supabaseClient.from('todos').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('goals').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('month_reminders').select('*').eq('profile_id', profileId),
-            supabaseClient.from('shopping_categories').select('*').eq('profile_id', profileId).order('created_at'),
-            supabaseClient.from('free_notes').select('content').eq('profile_id', profileId).maybeSingle()
+            supabaseClient.from('shopping_categories').select('*').eq('profile_id', profileId).order('created_at')
         ];
         try {
             const results = await Promise.all(queries);
-            const [ dayTasks, dayHighlights, notepad, weekGoals, habits, monthAchievements, transactions, shoppingList, todos, goals, monthReminders, shoppingCategories, freeNote ] = results.map(res => res.data);
-            
+            const [ dayTasks, dayHighlights, notepad, weekGoals, habits, monthAchievements, transactions, shoppingList, todos, goals, monthReminders, shoppingCategories ] = results.map(res => res.data);
             state = {
-                dayTasks: dayTasks || [], 
-                dayHighlights: dayHighlights || [], 
-                notepadContent: notepad?.content || '',
-                weekGoals: weekGoals || [], 
-                habits: habits || [], 
-                monthAchievements: monthAchievements || [],
-                transactions: transactions || [], 
-                shoppingList: shoppingList || [], 
-                todos: todos || [], 
-                goals: goals || [],
+                dayTasks: dayTasks || [], dayHighlights: dayHighlights || [], notepadContent: notepad?.content || '',
+                weekGoals: weekGoals || [], habits: habits || [], monthAchievements: monthAchievements || [],
+                transactions: transactions || [], shoppingList: shoppingList || [], todos: todos || [], goals: goals || [],
                 monthReminders: monthReminders || [],
-                shoppingCategories: shoppingCategories || [],
-                freeNoteContent: freeNote?.content || ''
+                shoppingCategories: shoppingCategories || [] 
             };
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
@@ -655,7 +653,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderWeekGoals(); renderHabits(); renderMonthAchievements(); renderTransactions();
         renderShoppingList(); renderTodos(); renderGoals(); renderCalendar();
         renderMonthProductivity();
-        renderNotesPage();
     }
     
     function updateDashboard() {
@@ -810,6 +807,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
+
+
+
+
+
    async function showRemindersForDate(dateString) {
         if (!checkLogin()) return;
         const date = new Date(dateString + 'T12:00:00');
@@ -819,28 +821,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const renderContent = () => {
             const remindersForDay = state.monthReminders.filter(r => r.reminder_date === dateString);
-            
             const remindersHtml = remindersForDay.length > 0
-                ? `<ul class="space-y-2 mb-4 max-h-40 overflow-y-auto">${remindersForDay.map(r => `
-                    <li class="flex justify-between items-center bg-slate-100 p-2 rounded-md text-sm group">
-                        <span>${r.text}</span>
-                        <div class="hidden group-hover:flex items-center">
-                            <button data-id="${r.id}" class="edit-reminder-btn text-blue-500 hover:text-blue-700 p-1" title="Editar Lembrete">
-                                <svg class="pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>
-                            </button>
-                            <button data-id="${r.id}" class="delete-reminder-btn text-red-500 hover:text-red-700 p-1 font-bold text-lg" title="Excluir Lembrete">&times;</button>
-                        </div>
-                    </li>`).join('')}</ul>`
+                ? `<ul class="space-y-2 mb-4 max-h-40 overflow-y-auto">${remindersForDay.map(r => `<li class="flex justify-between items-center bg-slate-100 p-2 rounded-md text-sm"><span>${r.text}</span><button data-id="${r.id}" class="delete-reminder-btn text-red-500 hover:text-red-700 p-1 font-bold text-lg">&times;</button></li>`).join('')}</ul>`
                 : '<p class="text-slate-500 mb-4">Nenhum lembrete para este dia.</p>';
-            const formHtml = `<form id="add-reminder-form" class="flex gap-2"><input id="new-reminder-text" type="text" placeholder="Novo lembrete..." class="flex-grow p-2 border rounded-md"><button type="submit" class="bg-indigo-600 text-white px-4 rounded-md hover:bg-indigo-700">Adicionar</button></form>`; 
+            
+            const formHtml = `<form id="add-reminder-form" class="flex gap-2"><input id="new-reminder-text" type="text" placeholder="Novo lembrete..." class="flex-grow p-2 border rounded-md"><button type="submit" class="bg-indigo-600 text-white px-4 rounded-md hover:bg-indigo-700">Adicionar</button></form>`;
+            
             modalFormContent.innerHTML = remindersHtml + formHtml;
         };
+
         openModal({
             title: `Lembretes para ${formattedDate}`,
             buttonsHtml: `<button id="modal-close-reminders" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">Fechar</button>`
         });
+
         renderContent();
-        $('#modal-close-reminders').addEventListener('click', () => history.back(), { once: true });
+        $('#modal-close-reminders').addEventListener('click', closeModal, { once: true });
     }
 
     function renderTransactions() {
@@ -955,13 +951,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     }
 
-    function renderNotesPage() {
-        const notepad = $('#main-notepad');
-        if (notepad) {
-            notepad.value = state.freeNoteContent || '';
-        }
-    }
-
     // ===================================================================
     // 7. SETUP DE EVENTOS
     // ===================================================================
@@ -982,6 +971,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (window.innerWidth <= 768) toggleMenu(false);
             }
         });
+
         window.addEventListener('popstate', (e) => {
             if (!modal.classList.contains('hidden')) {
                 closeModal();
@@ -990,30 +980,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showPage(hash, false); 
             }
         });
-        modalCloseBtn.addEventListener('click', () => {
-            history.back();
-        });
-        
+
+        modalCloseBtn.addEventListener('click', () => history.back());
         
         modalFormContent.addEventListener('click', async (e) => {
             const target = e.target;
             const dateString = modalFormContent.dataset.currentDate;
-
             if (target.matches('button[type="submit"]') && target.closest('form')?.id === 'add-reminder-form') {
                 e.preventDefault(); 
                 const form = target.closest('form');
                 const textInput = form.querySelector('#new-reminder-text');
-
                 if (textInput && textInput.value.trim() && dateString) {
                     target.disabled = true;
                     target.textContent = 'Salvando...';
-
-                    await supabaseClient.from('month_reminders').insert({
-                        profile_id: currentProfileId,
-                        reminder_date: dateString,
-                        text: textInput.value.trim()
-                    });
-                    
+                    await supabaseClient.from('month_reminders').insert({ profile_id: currentProfileId, reminder_date: dateString, text: textInput.value.trim() });
                     await refreshDataAndRender();
                     showRemindersForDate(dateString);
                 }
@@ -1031,7 +1011,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (editButton) {
                 const reminderId = editButton.dataset.id;
                 const reminderToEdit = state.monthReminders.find(r => r.id === reminderId);
-                
                 if (reminderToEdit) {
                     openCrudModal({
                         title: 'Editar Lembrete',
@@ -1040,7 +1019,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         onSave: async (data) => {
                             if (!data.text) return;
                             await supabaseClient.from('month_reminders').update({ text: data.text }).eq('id', reminderId);
-                            closeModal();
+                            history.back();
                             await refreshDataAndRender();
                             showRemindersForDate(dateString); 
                         }
@@ -1049,37 +1028,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
         
-        
         $('#day').addEventListener('input', async (e) => {
             if (e.target.id === 'notepad') {
                 if (!currentProfileId) return;
-                state.notepadContent = e.target.value;
+                state.notepadContent = e.target.value; // Atualiza o estado local
                 await supabaseClient.from('notepad').upsert({ profile_id: currentProfileId, content: e.target.value });
-            }
-        });
-        $('#notepad').addEventListener('input', async (e) => {
-            if (!currentProfileId) return;
-            await supabaseClient.from('notepad').upsert({ profile_id: currentProfileId, content: e.target.value });
-        });
-        $('#prev-month-btn').addEventListener('click', () => {
-            displayedDate.setMonth(displayedDate.getMonth() - 1);
-            renderCalendar();
-        });
-        $('#next-month-btn').addEventListener('click', () => {
-            displayedDate.setMonth(displayedDate.getMonth() + 1);
-            renderCalendar();
-        });
-        $('#calendar-grid').addEventListener('click', (e) => {
-            const dayCell = e.target.closest('.day-cell');
-            if (dayCell && dayCell.dataset.date) {
-                showRemindersForDate(dayCell.dataset.date);
-            }
-        });
-        $('#dashboard').addEventListener('click', (e) => {
-            const button = e.target.closest('.goto-reminder-btn');
-            if (button && button.dataset.date) {
-                displayedDate = new Date(button.dataset.date + 'T12:00:00');
-                showPage('#month');
             }
         });
         $('#notes').addEventListener('input', async (e) => {
@@ -1089,421 +1042,371 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await supabaseClient.from('free_notes').upsert({ profile_id: currentProfileId, content: e.target.value });
             }
         });
+
+        $('#prev-month-btn').addEventListener('click', () => { displayedDate.setMonth(displayedDate.getMonth() - 1); renderCalendar(); });
+        $('#next-month-btn').addEventListener('click', () => { displayedDate.setMonth(displayedDate.getMonth() + 1); renderCalendar(); });
+        $('#calendar-grid').addEventListener('click', (e) => { const dayCell = e.target.closest('.day-cell'); if (dayCell && dayCell.dataset.date) { showRemindersForDate(dayCell.dataset.date); } });
+        $('#dashboard').addEventListener('click', (e) => { const button = e.target.closest('.goto-reminder-btn'); if (button && button.dataset.date) { displayedDate = new Date(button.dataset.date + 'T12:00:00'); showPage('#month'); } });
+
         setupCrudListeners();
     }
 
 
-    function setupCrudListeners() {
-    $('#add-day-task-btn').addEventListener('click', () => {
-        if (!checkLogin()) return;
-        openCrudModal({ title: 'Nova Tarefa', formHtml: `<input name="text" placeholder="Descrição" class="w-full p-2 border rounded">`,
-            onSave: async (data) => {
-                if (!data.text) return;
-                await supabaseClient.from('day_tasks').insert({ text: data.text, profile_id: currentProfileId });
-                closeModal(); await refreshDataAndRender();
-            }
+function setupCrudListeners() {
+        $('#add-day-task-btn').addEventListener('click', () => {
+            if (!checkLogin()) return;
+            openCrudModal({ title: 'Nova Tarefa', formHtml: `<input name="text" placeholder="Descrição" class="w-full p-2 border rounded">`,
+                onSave: async (data) => {
+                    if (!data.text) return;
+                    await supabaseClient.from('day_tasks').insert({ text: data.text, profile_id: currentProfileId });
+                    history.back(); await refreshDataAndRender();
+                }
+            });
         });
-    });
-    $('#day-tasks-list').addEventListener('click', async (e) => {
-        const button = e.target.closest('button, input');
-        if (!button?.dataset.id) return;
-        const id = button.dataset.id;
+        $('#day-tasks-list').addEventListener('click', async (e) => {
+            const button = e.target.closest('button, input');
+            if (!button?.dataset.id) return;
+            const id = button.dataset.id;
+            if (button.matches('.delete-day-task-btn')) {
+                await supabaseClient.from('day_tasks').delete().eq('id', id);
+            } else if (button.matches('.day-task-check')) {
+                const task = state.dayTasks.find(t => t.id == id);
+                await supabaseClient.from('day_tasks').update({ completed: !task.completed }).eq('id', id);
+            } else if (button.matches('.edit-day-task-btn')) {
+                const task = state.dayTasks.find(t => t.id == id);
+                openCrudModal({ title: 'Editar Tarefa', item: task, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if (!data.text) return;
+                        await supabaseClient.from('day_tasks').update({ text: data.text }).eq('id', id);
+                        history.back(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            } else if (button.matches('.add-day-subtask-btn')) {
+                openCrudModal({ title: 'Nova Subtarefa', formHtml: `<input name="text" placeholder="Descrição da subtarefa" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if (!data.text) return;
+                        await supabaseClient.from('day_subtasks').insert({ text: data.text, parent_task_id: id, profile_id: currentProfileId });
+                        history.back(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            } else if (button.matches('.delete-day-subtask-btn')) {
+                await supabaseClient.from('day_subtasks').delete().eq('id', id);
+            } else if (button.matches('.day-subtask-check')) {
+                let subtaskToUpdate;
+                for(const task of state.dayTasks) {
+                    const found = task.day_subtasks.find(st => st.id == id);
+                    if(found) { subtaskToUpdate = found; break; }
+                }
+                if (subtaskToUpdate) await supabaseClient.from('day_subtasks').update({ completed: !subtaskToUpdate.completed }).eq('id', id);
+            } else if (button.matches('.edit-day-subtask-btn')) {
+                const taskId = button.dataset.taskId;
+                const task = state.dayTasks.find(t => t.id == taskId);
+                const subtask = task.day_subtasks.find(st => st.id == id);
+                openCrudModal({ title: 'Editar Subtarefa', item: subtask, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if (!data.text) return;
+                        await supabaseClient.from('day_subtasks').update({ text: data.text }).eq('id', id);
+                        history.back(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
+            await refreshDataAndRender();
+        });
+
+        $('#add-highlight-btn').addEventListener('click', () => {
+            if (!checkLogin()) return;
+            openCrudModal({ title: 'Novo Destaque', formHtml: `<input name="text" placeholder="Destaque do dia" class="w-full p-2 border rounded">`,
+                onSave: async (data) => {
+                    if(!data.text) return;
+                    await supabaseClient.from('day_highlights').insert({ text: data.text, profile_id: currentProfileId });
+                    history.back(); await refreshDataAndRender();
+                }
+            });
+        });
+        $('#highlights-list').addEventListener('click', async (e) => {
+            const button = e.target.closest('button');
+            if (!button?.dataset.id) return;
+            const id = button.dataset.id;
+            if (button.matches('.delete-highlight-btn')) {
+                await supabaseClient.from('day_highlights').delete().eq('id', id);
+            } else if (button.matches('.edit-highlight-btn')) {
+                const highlight = state.dayHighlights.find(h => h.id == id);
+                openCrudModal({ title: 'Editar Destaque', item: highlight, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('day_highlights').update({ text: data.text }).eq('id', id);
+                        history.back(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
+            await refreshDataAndRender();
+        });
+
+        $('#add-week-goal-btn').addEventListener('click', () => {
+            if (!checkLogin()) return;
+            openCrudModal({ title: 'Novo Objetivo Semanal', formHtml: `<input name="text" placeholder="Descrição do objetivo" class="w-full p-2 border rounded">`,
+                onSave: async (data) => {
+                    if(!data.text) return;
+                    await supabaseClient.from('week_goals').insert({ text: data.text, profile_id: currentProfileId });
+                    history.back(); await refreshDataAndRender();
+                }
+            });
+        });
+        $('#week-goals-list').addEventListener('click', async (e) => {
+            const button = e.target.closest('button');
+            if (!button?.dataset.id) return;
+            const id = button.dataset.id;
+            if (button.matches('.delete-week-goal-btn')) {
+                await supabaseClient.from('week_goals').delete().eq('id', id);
+            } else if (button.matches('.edit-week-goal-btn')) {
+                const goal = state.weekGoals.find(g => g.id == id);
+                openCrudModal({ title: 'Editar Objetivo', item: goal, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('week_goals').update({ text: data.text }).eq('id', id);
+                        history.back(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
+            await refreshDataAndRender();
+        });
+
+        $('#add-habit-btn').addEventListener('click', () => {
+            if (!checkLogin()) return;
+            openCrudModal({ title: 'Novo Hábito', formHtml: `<input name="text" placeholder="Descrição do hábito" class="w-full p-2 border rounded">`,
+                onSave: async (data) => {
+                    if(!data.text) return;
+                    await supabaseClient.from('habits').insert({ text: data.text, profile_id: currentProfileId });
+                    history.back(); await refreshDataAndRender();
+                }
+            });
+        });
+        $('#habits-list').addEventListener('click', async (e) => {
+            const el = e.target.closest('button, input');
+            if (!el?.dataset.id) return;
+            const id = el.dataset.id;
+            if (el.matches('.delete-habit-btn')) {
+                await supabaseClient.from('habits').delete().eq('id', id);
+            } else if (el.matches('.habit-check')) {
+                const habit = state.habits.find(h => h.id == id);
+                await supabaseClient.from('habits').update({ completed: !habit.completed }).eq('id', id);
+            } else if (el.matches('.edit-habit-btn')) {
+                const habit = state.habits.find(h => h.id == id);
+                openCrudModal({ title: 'Editar Hábito', item: habit, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('habits').update({ text: data.text }).eq('id', id);
+                        history.back(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
+            await refreshDataAndRender();
+        });
         
-        if (button.matches('.delete-day-task-btn')) {
-            await supabaseClient.from('day_tasks').delete().eq('id', id);
-        } else if (button.matches('.day-task-check')) {
-            const task = state.dayTasks.find(t => t.id == id);
-            await supabaseClient.from('day_tasks').update({ completed: !task.completed }).eq('id', id);
-        } else if (button.matches('.edit-day-task-btn')) {
-            const task = state.dayTasks.find(t => t.id == id);
-            openCrudModal({ title: 'Editar Tarefa', item: task, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
-                onSave: async (data) => {
-                    if (!data.text) return;
-                    await supabaseClient.from('day_tasks').update({ text: data.text }).eq('id', id);
-                    closeModal(); await refreshDataAndRender();
-                }
-            });
-            return; 
-        } else if (button.matches('.add-day-subtask-btn')) {
-            openCrudModal({ title: 'Nova Subtarefa', formHtml: `<input name="text" placeholder="Descrição da subtarefa" class="w-full p-2 border rounded">`,
-                onSave: async (data) => {
-                    if (!data.text) return;
-                    await supabaseClient.from('day_subtasks').insert({ text: data.text, parent_task_id: id, profile_id: currentProfileId });
-                    closeModal(); await refreshDataAndRender();
-                }
-            });
-            return;
-        } else if (button.matches('.delete-day-subtask-btn')) {
-            await supabaseClient.from('day_subtasks').delete().eq('id', id);
-        } else if (button.matches('.day-subtask-check')) {
-            let subtaskToUpdate;
-            for(const task of state.dayTasks) {
-                const found = task.day_subtasks.find(st => st.id == id);
-                if(found) { subtaskToUpdate = found; break; }
-            }
-            await supabaseClient.from('day_subtasks').update({ completed: !subtaskToUpdate.completed }).eq('id', id);
-        } else if (button.matches('.edit-day-subtask-btn')) {
-            const taskId = button.dataset.taskId;
-            const task = state.dayTasks.find(t => t.id == taskId);
-            const subtask = task.day_subtasks.find(st => st.id == id);
-            openCrudModal({ title: 'Editar Subtarefa', item: subtask, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
-                onSave: async (data) => {
-                    if (!data.text) return;
-                    await supabaseClient.from('day_subtasks').update({ text: data.text }).eq('id', id);
-                    closeModal(); await refreshDataAndRender();
-                }
-            });
-            return;
-        }
-        await refreshDataAndRender();
-    });
-
-    $('#add-highlight-btn').addEventListener('click', () => {
-        if (!checkLogin()) return;
-        openCrudModal({ title: 'Novo Destaque', formHtml: `<input name="text" placeholder="Destaque do dia" class="w-full p-2 border rounded">`,
-            onSave: async (data) => {
-                if(!data.text) return;
-                await supabaseClient.from('day_highlights').insert({ text: data.text, profile_id: currentProfileId });
-                closeModal(); await refreshDataAndRender();
-            }
-        });
-    });
-    $('#highlights-list').addEventListener('click', async (e) => {
-        const button = e.target.closest('button');
-        if (!button?.dataset.id) return;
-        const id = button.dataset.id;
-        const highlight = state.dayHighlights.find(h => h.id == id);
-        if (button.matches('.delete-highlight-btn')) {
-            await supabaseClient.from('day_highlights').delete().eq('id', id);
-        } else if (button.matches('.edit-highlight-btn')) {
-            openCrudModal({ title: 'Editar Destaque', item: highlight, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
-                onSave: async (data) => {
-                    if(!data.text) return;
-                    await supabaseClient.from('day_highlights').update({ text: data.text }).eq('id', id);
-                    closeModal(); await refreshDataAndRender();
-                }
-            });
-            return;
-        }
-        await refreshDataAndRender();
-    });
-
-    $('#add-week-goal-btn').addEventListener('click', () => {
-        if (!checkLogin()) return;
-        openCrudModal({ title: 'Novo Objetivo Semanal', formHtml: `<input name="text" placeholder="Descrição do objetivo" class="w-full p-2 border rounded">`,
-            onSave: async (data) => {
-                if(!data.text) return;
-                await supabaseClient.from('week_goals').insert({ text: data.text, profile_id: currentProfileId });
-                closeModal(); await refreshDataAndRender();
-            }
-        });
-    });
-    $('#week-goals-list').addEventListener('click', async (e) => {
-        const button = e.target.closest('button');
-        if (!button?.dataset.id) return;
-        const id = button.dataset.id;
-        const goal = state.weekGoals.find(g => g.id == id);
-        if (button.matches('.delete-week-goal-btn')) {
-            await supabaseClient.from('week_goals').delete().eq('id', id);
-        } else if (button.matches('.edit-week-goal-btn')) {
-            openCrudModal({ title: 'Editar Objetivo', item: goal, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
-                onSave: async (data) => {
-                    if(!data.text) return;
-                    await supabaseClient.from('week_goals').update({ text: data.text }).eq('id', id);
-                    closeModal(); await refreshDataAndRender();
-                }
-            });
-            return;
-        }
-        await refreshDataAndRender();
-    });
-
-    $('#add-habit-btn').addEventListener('click', () => {
-        if (!checkLogin()) return;
-        openCrudModal({ title: 'Novo Hábito', formHtml: `<input name="text" placeholder="Descrição do hábito" class="w-full p-2 border rounded">`,
-            onSave: async (data) => {
-                if(!data.text) return;
-                await supabaseClient.from('habits').insert({ text: data.text, profile_id: currentProfileId });
-                closeModal(); await refreshDataAndRender();
-            }
-        });
-    });
-    $('#habits-list').addEventListener('click', async (e) => {
-        const el = e.target.closest('button, input');
-        if (!el?.dataset.id) return;
-        const id = el.dataset.id;
-        const habit = state.habits.find(h => h.id == id);
-        if (el.matches('.delete-habit-btn')) {
-            await supabaseClient.from('habits').delete().eq('id', id);
-        } else if (el.matches('.habit-check')) {
-            await supabaseClient.from('habits').update({ completed: !habit.completed }).eq('id', id);
-        } else if (el.matches('.edit-habit-btn')) {
-            openCrudModal({ title: 'Editar Hábito', item: habit, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
-                onSave: async (data) => {
-                    if(!data.text) return;
-                    await supabaseClient.from('habits').update({ text: data.text }).eq('id', id);
-                    closeModal(); await refreshDataAndRender();
-                }
-            });
-            return;
-        }
-        await refreshDataAndRender();
-    });
-    
-    $('#add-achievement-btn').addEventListener('click', () => {
-        if (!checkLogin()) return;
-        openCrudModal({ title: 'Nova Conquista', formHtml: `<input name="text" placeholder="Descrição da conquista" class="w-full p-2 border rounded">`,
-            onSave: async(data) => {
-                if(!data.text) return;
-                await supabaseClient.from('month_achievements').insert({ text: data.text, profile_id: currentProfileId });
-                closeModal(); await refreshDataAndRender();
-            }
-        });
-    });
-    $('#achievements-list').addEventListener('click', async (e) => {
-        const button = e.target.closest('button');
-        if (!button?.dataset.id) return;
-        const id = button.dataset.id;
-        const achievement = state.monthAchievements.find(a => a.id == id);
-        if (button.matches('.delete-achievement-btn')) {
-            await supabaseClient.from('month_achievements').delete().eq('id', id);
-        } else if (button.matches('.edit-achievement-btn')) {
-            openCrudModal({ title: 'Editar Conquista', item: achievement, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+        $('#add-achievement-btn').addEventListener('click', () => {
+            if (!checkLogin()) return;
+            openCrudModal({ title: 'Nova Conquista', formHtml: `<input name="text" placeholder="Descrição da conquista" class="w-full p-2 border rounded">`,
                 onSave: async(data) => {
                     if(!data.text) return;
-                    await supabaseClient.from('month_achievements').update({ text: data.text }).eq('id', id);
-                    closeModal(); await refreshDataAndRender();
+                    await supabaseClient.from('month_achievements').insert({ text: data.text, profile_id: currentProfileId });
+                    history.back(); await refreshDataAndRender();
                 }
             });
-            return;
-        }
-        await refreshDataAndRender();
-    });
+        });
+        $('#achievements-list').addEventListener('click', async (e) => {
+            const button = e.target.closest('button');
+            if (!button?.dataset.id) return;
+            const id = button.dataset.id;
+            if (button.matches('.delete-achievement-btn')) {
+                await supabaseClient.from('month_achievements').delete().eq('id', id);
+            } else if (button.matches('.edit-achievement-btn')) {
+                const achievement = state.monthAchievements.find(a => a.id == id);
+                openCrudModal({ title: 'Editar Conquista', item: achievement, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async(data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('month_achievements').update({ text: data.text }).eq('id', id);
+                        history.back(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
+            await refreshDataAndRender();
+        });
 
-    const transactionFormHtml = `<input type="text" name="description" placeholder="Descrição" class="w-full p-2 border rounded"><input type="text" name="category" placeholder="Categoria" class="w-full p-2 border rounded"><input type="number" name="amount" placeholder="Valor" step="0.01" class="w-full p-2 border rounded">`;
-    $('#add-income-btn').addEventListener('click', () => {
-        if (!checkLogin()) return;
-        openCrudModal({ title: 'Nova Receita', formHtml: transactionFormHtml,
-            onSave: async (data) => {
-                if(!data.description || !data.amount) return;
-                await supabaseClient.from('transactions').insert({ ...data, type: 'income', profile_id: currentProfileId });
-                closeModal(); await refreshDataAndRender();
-            }
-        });
-    });
-    $('#add-expense-btn').addEventListener('click', () => {
-        if (!checkLogin()) return;
-        openCrudModal({ title: 'Nova Despesa', formHtml: transactionFormHtml,
-            onSave: async (data) => {
-                if(!data.description || !data.amount) return;
-                await supabaseClient.from('transactions').insert({ ...data, type: 'expense', profile_id: currentProfileId });
-                closeModal(); await refreshDataAndRender();
-            }
-        });
-    });
-    $('#transactions-table-body').addEventListener('click', async (e) => {
-        const button = e.target.closest('button');
-        if (!button?.dataset.id) return;
-        const id = button.dataset.id;
-        const transaction = state.transactions.find(t => t.id == id);
-        if (button.matches('.delete-transaction-btn')) {
-            await supabaseClient.from('transactions').delete().eq('id', id);
-        } else if (button.matches('.edit-transaction-btn')) {
-            openCrudModal({ title: 'Editar Transação', item: transaction, formHtml: transactionFormHtml,
+        const transactionFormHtml = `<input type="text" name="description" placeholder="Descrição" class="w-full p-2 border rounded"><input type="text" name="category" placeholder="Categoria" class="w-full p-2 border rounded"><input type="number" name="amount" placeholder="Valor" step="0.01" class="w-full p-2 border rounded">`;
+        $('#add-income-btn').addEventListener('click', () => {
+            if (!checkLogin()) return;
+            openCrudModal({ title: 'Nova Receita', formHtml: transactionFormHtml,
                 onSave: async (data) => {
                     if(!data.description || !data.amount) return;
-                    await supabaseClient.from('transactions').update(data).eq('id', id);
-                    closeModal(); await refreshDataAndRender();
+                    await supabaseClient.from('transactions').insert({ ...data, type: 'income', profile_id: currentProfileId });
+                    history.back(); await refreshDataAndRender();
                 }
             });
-            return;
-        }
-        await refreshDataAndRender();
-    });
-    
-    $('#buy').addEventListener('click', async (e) => {
-        const el = e.target.closest('button, input');
-        if (!el) return;
-
-        if (el.matches('.add-shopping-item-btn')) {
+        });
+        $('#add-expense-btn').addEventListener('click', () => {
             if (!checkLogin()) return;
-            const category = el.dataset.category;
-            openCrudModal({ title: `Novo Item - ${category}`, formHtml: `<input name="text" placeholder="Nome do item" class="w-full p-2 border rounded">`,
+            openCrudModal({ title: 'Nova Despesa', formHtml: transactionFormHtml,
+                onSave: async (data) => {
+                    if(!data.description || !data.amount) return;
+                    await supabaseClient.from('transactions').insert({ ...data, type: 'expense', profile_id: currentProfileId });
+                    history.back(); await refreshDataAndRender();
+                }
+            });
+        });
+        $('#transactions-table-body').addEventListener('click', async (e) => {
+            const button = e.target.closest('button');
+            if (!button?.dataset.id) return;
+            const id = button.dataset.id;
+            if (button.matches('.delete-transaction-btn')) {
+                await supabaseClient.from('transactions').delete().eq('id', id);
+            } else if (button.matches('.edit-transaction-btn')) {
+                const transaction = state.transactions.find(t => t.id == id);
+                openCrudModal({ title: 'Editar Transação', item: transaction, formHtml: transactionFormHtml,
+                    onSave: async (data) => {
+                        if(!data.description || !data.amount) return;
+                        await supabaseClient.from('transactions').update(data).eq('id', id);
+                        history.back(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
+            await refreshDataAndRender();
+        });
+        
+        $('#buy').addEventListener('click', async (e) => {
+            const el = e.target.closest('button, input');
+            if (!el) return;
+            if (el.matches('.add-shopping-item-btn')) {
+                if (!checkLogin()) return;
+                const category = el.dataset.category;
+                openCrudModal({ title: `Novo Item - ${category}`, formHtml: `<input name="text" placeholder="Nome do item" class="w-full p-2 border rounded">`,
+                    onSave: async (data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('shopping_list').insert({ ...data, category, profile_id: currentProfileId });
+                        history.back(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
+            if (el.id === 'add-shopping-category-btn') {
+                 if (!checkLogin()) return;
+                 openCrudModal({ title: 'Nova Categoria de Compras', formHtml: `<input name="name" placeholder="Nome da categoria" class="w-full p-2 border rounded">`,
+                    onSave: async(data) => {
+                        if (!data.name) return;
+                        await supabaseClient.from('shopping_categories').insert({ name: data.name, profile_id: currentProfileId });
+                        history.back(); await refreshDataAndRender();
+                    }
+                 });
+                 return;
+            }
+            if (el.matches('.delete-shopping-category-btn')) {
+                if(confirm('Tem certeza que deseja excluir esta categoria e todos os itens dentro dela?')) {
+                    const categoryId = el.dataset.id;
+                    const categoryToDelete = state.shoppingCategories.find(c => c.id === categoryId);
+                    if(categoryToDelete) {
+                        await supabaseClient.from('shopping_categories').delete().eq('id', categoryId);
+                        await supabaseClient.from('shopping_list').delete().eq('category', categoryToDelete.name);
+                        await refreshDataAndRender();
+                    }
+                }
+                return;
+            }
+            if (!el.dataset.id) return;
+            const id = el.dataset.id;
+            if (el.matches('.delete-shopping-item-btn')) {
+                await supabaseClient.from('shopping_list').delete().eq('id', id);
+            } else if (el.matches('.shopping-item-check')) {
+                const item = state.shoppingList.find(i => i.id == id);
+                if (item) await supabaseClient.from('shopping_list').update({ completed: !item.completed }).eq('id', id);
+            } else if (el.matches('.edit-shopping-item-btn')) {
+                const item = state.shoppingList.find(i => i.id == id);
+                openCrudModal({ title: 'Editar Item', item, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
+                    onSave: async(data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('shopping_list').update({text: data.text}).eq('id', id);
+                        history.back(); await refreshDataAndRender();
+                    }
+                });
+                return;
+            }
+            await refreshDataAndRender();
+        });
+
+        const todoFormHtml = `<input type="text" name="text" placeholder="Descrição da tarefa" class="w-full p-2 border rounded"><select name="priority" class="w-full p-2 border rounded"><option value="baixa">Baixa</option><option value="media">Média</option><option value="alta">Alta</option></select><select name="status" class="w-full p-2 border rounded"><option value="pendente">Pendente</option><option value="andamento">Em Andamento</option><option value="concluido">Concluído</option></select>`;
+        $('#add-todo-btn').addEventListener('click', () => {
+            if (!checkLogin()) return;
+            openCrudModal({ title: 'Nova Tarefa', formHtml: todoFormHtml,
                 onSave: async (data) => {
                     if(!data.text) return;
-                    await supabaseClient.from('shopping_list').insert({ ...data, category, profile_id: currentProfileId });
-                    closeModal(); await refreshDataAndRender();
+                    await supabaseClient.from('todos').insert({ ...data, profile_id: currentProfileId });
+                    history.back(); await refreshDataAndRender();
                 }
             });
-            return;
-        }
-        if (el.id === 'add-shopping-category-btn') {
-             if (!checkLogin()) return;
-             openCrudModal({ title: 'Nova Categoria de Compras', formHtml: `<input name="name" placeholder="Nome da categoria" class="w-full p-2 border rounded">`,
-                onSave: async(data) => {
-                    if (!data.name) return;
-                    await supabaseClient.from('shopping_categories').insert({ name: data.name, profile_id: currentProfileId });
-                    closeModal(); await refreshDataAndRender();
-                }
-             });
-             return;
-        }
-        if (el.matches('.delete-shopping-category-btn')) {
-            if(confirm('Tem certeza que deseja excluir esta categoria e todos os itens dentro dela?')) {
-                const categoryId = el.dataset.id;
-                const categoryToDelete = state.shoppingCategories.find(c => c.id === categoryId);
-                await supabaseClient.from('shopping_categories').delete().eq('id', categoryId);
-                await supabaseClient.from('shopping_list').delete().eq('category', categoryToDelete.name);
-                await refreshDataAndRender();
-            }
-            return;
-        }
-        if (!el.dataset.id) return;
-        const id = el.dataset.id;
-        const item = state.shoppingList.find(i => i.id == id);
-        
-        if (el.matches('.delete-shopping-item-btn')) {
-            await supabaseClient.from('shopping_list').delete().eq('id', id);
-        } else if (el.matches('.shopping-item-check')) {
-            await supabaseClient.from('shopping_list').update({ completed: !item.completed }).eq('id', id);
-        } else if (el.matches('.edit-shopping-item-btn')) {
-            openCrudModal({ title: 'Editar Item', item, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
-                onSave: async(data) => {
-                    if(!data.text) return;
-                    await supabaseClient.from('shopping_list').update({text: data.text}).eq('id', id);
-                    closeModal(); await refreshDataAndRender();
-                }
-            });
-            return;
-        }
-        await refreshDataAndRender();
-    });
-
-    const todoFormHtml = `<input type="text" name="text" placeholder="Descrição da tarefa" class="w-full p-2 border rounded"><select name="priority" class="w-full p-2 border rounded"><option value="baixa">Baixa</option><option value="media">Média</option><option value="alta">Alta</option></select><select name="status" class="w-full p-2 border rounded"><option value="pendente">Pendente</option><option value="andamento">Em Andamento</option><option value="concluido">Concluído</option></select>`;
-    $('#add-todo-btn').addEventListener('click', () => {
-        if (!checkLogin()) return;
-        openCrudModal({ title: 'Nova Tarefa', formHtml: todoFormHtml,
-            onSave: async (data) => {
-                if(!data.text) return;
-                await supabaseClient.from('todos').insert({ ...data, profile_id: currentProfileId });
-                closeModal(); await refreshDataAndRender();
-            }
         });
-    });
-    $('#todo-table-body').addEventListener('click', async (e) => {
-        const button = e.target.closest('button');
-        if (!button?.dataset.id) return;
-        const id = button.dataset.id;
-        const todo = state.todos.find(t => t.id == id);
-        if (button.matches('.delete-todo-btn')) {
-            await supabaseClient.from('todos').delete().eq('id', id);
-        } else if (button.matches('.edit-todo-btn')) {
-            openCrudModal({ title: 'Editar Tarefa', item: todo, formHtml: todoFormHtml,
-                onSave: async(data) => {
-                    if(!data.text) return;
-                    await supabaseClient.from('todos').update(data).eq('id', id);
-                    closeModal(); await refreshDataAndRender();
-                }
-            });
-            return;
-        }
-        await refreshDataAndRender();
-    });
-    
-    const goalFormHtml = `<input type="text" name="text" placeholder="Descrição da meta" class="w-full p-2 border rounded"><select name="category" class="w-full p-2 border rounded"><option>Financeira</option><option>Saúde</option><option>Estudos</option><option>Pessoal</option></select><input type="number" name="current" placeholder="Valor Atual" class="w-full p-2 border rounded" step="any"><input type="number" name="target" placeholder="Valor Alvo" class="w-full p-2 border rounded" step="any"><input type="text" name="unit" placeholder="Unidade (ex: R$, km, %)" class="w-full p-2 border rounded">`;
-    $('#add-goal-btn').addEventListener('click', () => {
-        if (!checkLogin()) return;
-        openCrudModal({ title: 'Nova Meta', formHtml: goalFormHtml,
-            onSave: async (data) => {
-                if(!data.text || !data.target) return;
-                await supabaseClient.from('goals').insert({ ...data, profile_id: currentProfileId });
-                closeModal(); await refreshDataAndRender();
+        $('#todo-table-body').addEventListener('click', async (e) => {
+            const button = e.target.closest('button');
+            if (!button?.dataset.id) return;
+            const id = button.dataset.id;
+            if (button.matches('.delete-todo-btn')) {
+                await supabaseClient.from('todos').delete().eq('id', id);
+            } else if (button.matches('.edit-todo-btn')) {
+                const todo = state.todos.find(t => t.id == id);
+                openCrudModal({ title: 'Editar Tarefa', item: todo, formHtml: todoFormHtml,
+                    onSave: async(data) => {
+                        if(!data.text) return;
+                        await supabaseClient.from('todos').update(data).eq('id', id);
+                        history.back(); await refreshDataAndRender();
+                    }
+                });
+                return;
             }
-        });
-    });
-
-    
-    let holdTimeout;
-    let holdInterval;
-
-    const stopHolding = async (goalId) => {
-        clearTimeout(holdTimeout);
-        clearInterval(holdInterval);
-        const goal = state.goals.find(g => g.id === goalId);
-        if (goal) {
-            await supabaseClient.from('goals').update({ current: goal.current }).eq('id', goalId);
-        }
-    };
-
-    $('#goals-list').addEventListener('mousedown', (e) => {
-        const button = e.target.closest('.goal-adjust-btn');
-        if (!button) return;
-
-        const goalId = button.dataset.id;
-        const action = button.dataset.action;
-        const goal = state.goals.find(g => g.id === goalId);
-        if (!goal) return;
-
-        const updateGoal = (step) => {
-            if (action === 'increment') {
-                goal.current += step;
-            } else if (action === 'decrement') {
-                goal.current = Math.max(0, goal.current - step);
-            }
-            renderGoals();
-        };
-        updateGoal(1);
-        let currentStep = 1;
-        let speed = 160;
-
-        holdTimeout = setTimeout(() => {
-            holdInterval = setInterval(() => {
-                if (speed < 70) {
-                    currentStep = 10;
-                } else if (speed < 120) {
-                    currentStep = 5;
-                } else {
-                    currentStep = 1;
-                }
-                
-                speed = Math.max(30, speed * 0.90);
-                updateGoal(currentStep);
-
-            }, speed);
-        }, 400);
-
-        const stopAction = () => {
-            document.removeEventListener('mouseup', stopAction);
-            button.removeEventListener('mouseleave', stopAction);
-            stopHolding(goalId);
-        };
-        
-        document.addEventListener('mouseup', stopAction);
-        button.addEventListener('mouseleave', stopAction);
-    });
-
-    $('#goals-list').addEventListener('click', async (e) => {
-        if (e.target.closest('.goal-adjust-btn')) return;
-        const button = e.target.closest('button');
-        if (!button || !button.dataset.id) return;
-        
-        const id = button.dataset.id;
-        const goal = state.goals.find(g => g.id == id);
-        
-        if (button.matches('.delete-goal-btn')) {
-            await supabaseClient.from('goals').delete().eq('id', id);
             await refreshDataAndRender();
-        } else if (button.matches('.edit-goal-btn')) {
-            openCrudModal({ title: 'Editar Meta', item: goal, formHtml: goalFormHtml,
+        });
+        
+        const goalFormHtml = `<input type="text" name="text" placeholder="Descrição da meta" class="w-full p-2 border rounded"><select name="category" class="w-full p-2 border rounded"><option>Financeira</option><option>Saúde</option><option>Estudos</option><option>Pessoal</option></select><input type="number" name="current" placeholder="Valor Atual" class="w-full p-2 border rounded" step="any"><input type="number" name="target" placeholder="Valor Alvo" class="w-full p-2 border rounded" step="any"><input type="text" name="unit" placeholder="Unidade (ex: R$, km, %)" class="w-full p-2 border rounded">`;
+        $('#add-goal-btn').addEventListener('click', () => {
+            if (!checkLogin()) return;
+            openCrudModal({ title: 'Nova Meta', formHtml: goalFormHtml,
                 onSave: async (data) => {
                     if(!data.text || !data.target) return;
-                    await supabaseClient.from('goals').update(data).eq('id', id);
-                    closeModal(); await refreshDataAndRender();
+                    await supabaseClient.from('goals').insert({ ...data, profile_id: currentProfileId });
+                    history.back(); await refreshDataAndRender();
                 }
             });
-        }
-    });
-}
+        });
+
+        let holdTimeout, holdInterval;
+        const stopHolding = async (goalId) => { clearTimeout(holdTimeout); clearInterval(holdInterval); const goal = state.goals.find(g => g.id === goalId); if (goal) { await supabaseClient.from('goals').update({ current: goal.current }).eq('id', goalId); } };
+        $('#goals-list').addEventListener('mousedown', (e) => {
+            const button = e.target.closest('.goal-adjust-btn'); if (!button) return; const goalId = button.dataset.id; const action = button.dataset.action; const goal = state.goals.find(g => g.id === goalId); if (!goal) return;
+            const updateGoal = (step) => { if (action === 'increment') { goal.current += step; } else if (action === 'decrement') { goal.current = Math.max(0, goal.current - step); } renderGoals(); };
+            updateGoal(1);
+            let currentStep = 1; let speed = 160;
+            holdTimeout = setTimeout(() => {
+                holdInterval = setInterval(() => {
+                    if (speed < 70) { currentStep = 10; } else if (speed < 120) { currentStep = 5; } else { currentStep = 1; }
+                    speed = Math.max(30, speed * 0.90);setupEventListeners
+                    updateGoal(currentStep);
+                }, speed);
+            }, 400);
+            const stopAction = () => { document.removeEventListener('mouseup', stopAction); button.removeEventListener('mouseleave', stopAction); stopHolding(goalId); };
+            document.addEventListener('mouseup', stopAction);
+            button.addEventListener('mouseleave', stopAction);
+        });
+        $('#goals-list').addEventListener('click', async (e) => {
+            if (e.target.closest('.goal-adjust-btn')) return;
+            const button = e.target.closest('button'); if (!button || !button.dataset.id) return; const id = button.dataset.id;
+            if (button.matches('.delete-goal-btn')) { await supabaseClient.from('goals').delete().eq('id', id); await refreshDataAndRender(); } 
+            else if (button.matches('.edit-goal-btn')) { const goal = state.goals.find(g => g.id == id); openCrudModal({ title: 'Editar Meta', item: goal, formHtml: goalFormHtml, onSave: async (data) => { if(!data.text || !data.target) return; await supabaseClient.from('goals').update(data).eq('id', id); history.back(); await refreshDataAndRender(); } }); }
+        });
+    }
 
     // ===================================================================
     // 8. INICIALIZAÇÃO DA APLICAÇÃO
@@ -1520,3 +1423,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
+
