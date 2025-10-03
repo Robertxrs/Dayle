@@ -205,9 +205,9 @@
                 </div>
             </section>
            
-            <section id="week" class="page">
-                <h2 class="text-3xl font-bold text-slate-800 mb-6">📆 Visão da Semana</h2>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+           <section id="week" class="page">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6">📆 Rotina da Semana</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="bg-white p-6 rounded-lg shadow-sm">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-semibold text-slate-700">Objetivos da Semana</h3>
@@ -215,16 +215,22 @@
                         </div>
                         <ul id="week-goals-list" class="space-y-2 list-disc list-inside text-slate-700"></ul>
                     </div>
+
                     <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-semibold text-slate-700">Checklist de Hábitos</h3>
-                            <button id="add-habit-btn" class="bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar</button>
+                        <div id="week-day-selector" class="flex justify-between border-b pb-4 mb-4">
+                            </div>
+                        
+                        <div>
+                            <ul id="weekly-tasks-list" class="space-y-3 mb-4">
+                                </ul>
+                            <form id="add-weekly-task-form" class="flex gap-2">
+                                <input type="text" id="new-weekly-task-input" placeholder="Adicionar passo à rotina..." class="flex-grow p-2 border rounded-md" required>
+                                <button type="submit" class="bg-indigo-600 text-white px-4 rounded-md font-semibold hover:bg-indigo-700">Add</button>
+                            </form>
                         </div>
-                        <ul id="habits-list" class="space-y-3"></ul>
                     </div>
                 </div>
             </section>
-
 
             <section id="month" class="page">
                 <h2 class="text-3xl font-bold text-slate-800 mb-6">📅 Visão do Mês</h2>
@@ -439,7 +445,7 @@
             signupBtn.classList.remove('hidden');
             logoutBtn.classList.add('hidden');
             state = {
-                dayTasks: [], dayHighlights: [], notepadContent: '', weekGoals: [], habits: [],
+                dayTasks: [], dayHighlights: [], notepadContent: '', weekGoals: [],
                 monthAchievements: [], transactions: [], shoppingList: [], todos: [], goals: [],
             };
         }
@@ -452,24 +458,28 @@
             supabaseClient.from('day_highlights').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('notepad').select('content').eq('profile_id', profileId).maybeSingle(),
             supabaseClient.from('week_goals').select('*').eq('profile_id', profileId).order('created_at'),
-            supabaseClient.from('habits').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('month_achievements').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('transactions').select('*').eq('profile_id', profileId).order('created_at', { ascending: false }),
             supabaseClient.from('shopping_list').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('todos').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('goals').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('month_reminders').select('*').eq('profile_id', profileId),
-            supabaseClient.from('shopping_categories').select('*').eq('profile_id', profileId).order('created_at')
+            supabaseClient.from('shopping_categories').select('*').eq('profile_id', profileId).order('created_at'),
+
+            supabaseClient.from('weekly_routine_tasks').select('*').eq('profile_id', profileId),
+            supabaseClient.from('weekly_task_completions').select('*').eq('profile_id', profileId)
         ];
         try {
             const results = await Promise.all(queries);
-            const [ dayTasks, dayHighlights, notepad, weekGoals, habits, monthAchievements, transactions, shoppingList, todos, goals, monthReminders, shoppingCategories ] = results.map(res => res.data);
+            const [ dayTasks, dayHighlights, notepad, weekGoals, monthAchievements, transactions, shoppingList, todos, goals, monthReminders, shoppingCategories, weeklyRoutineTasks, weeklyTaskCompletions] = results.map(res => res.data);
             state = {
                 dayTasks: dayTasks || [], dayHighlights: dayHighlights || [], notepadContent: notepad?.content || '',
-                weekGoals: weekGoals || [], habits: habits || [], monthAchievements: monthAchievements || [],
+                weekGoals: weekGoals || [], monthAchievements: monthAchievements || [],
                 transactions: transactions || [], shoppingList: shoppingList || [], todos: todos || [], goals: goals || [],
                 monthReminders: monthReminders || [],
-                shoppingCategories: shoppingCategories || [] 
+                shoppingCategories: shoppingCategories || [],
+                weeklyRoutineTasks: weeklyRoutineTasks || [],
+                weeklyTaskCompletions: weeklyTaskCompletions || []
             };
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
@@ -650,7 +660,7 @@
     // ===================================================================
     function renderAll() {
         updateDashboard(); renderDayTasks(); renderDayHighlights(); renderNotepad(); 
-        renderWeekGoals(); renderHabits(); renderMonthAchievements(); renderTransactions();
+        renderWeekGoals(); renderWeeklyRoutine(); renderMonthAchievements(); renderMonthAchievements(); renderTransactions();
         renderShoppingList(); renderTodos(); renderGoals(); renderCalendar();
         renderMonthProductivity();
     }
@@ -733,11 +743,6 @@
         list.innerHTML = state.weekGoals.map(goal => `<li class="flex justify-between items-center group"><span>${goal.text}</span><div class="hidden group-hover:flex gap-2"><button data-id="${goal.id}" class="edit-week-goal-btn text-slate-400 hover:text-indigo-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${goal.id}" class="delete-week-goal-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
     }
     
-    function renderHabits() {
-        const list = $('#habits-list');
-        if (!state.habits) { list.innerHTML = ''; return; }
-        list.innerHTML = state.habits.map(habit => `<li class="flex items-center justify-between group"><div class="flex items-center"><input type="checkbox" data-id="${habit.id}" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 habit-check" ${habit.completed ? 'checked' : ''}><span class="ml-3 ${habit.completed ? 'text-slate-500 line-through' : 'text-slate-800'}">${habit.text}</span></div><div class="hidden group-hover:flex gap-2"><button data-id="${habit.id}" class="edit-habit-btn text-slate-400 hover:text-indigo-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></button><button data-id="${habit.id}" class="delete-habit-btn text-slate-400 hover:text-red-600"><svg class="pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></li>`).join('');
-    }
 
     function renderMonthAchievements() {
         const list = $('#achievements-list');
@@ -951,6 +956,87 @@
         }).join('');
     }
 
+    function renderWeeklyRoutine() {
+        if (state.selectedDayOfWeek === undefined) {
+            state.selectedDayOfWeek = new Date().getDay();
+        }
+
+        const daySelector = $('#week-day-selector');
+        const tasksList = $('#weekly-tasks-list');
+        const container = tasksList?.parentElement; 
+        if (!daySelector || !tasksList || !container) return;
+
+        const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        const today = new Date().getDay();
+        const todayStr = new Date().toISOString().split('T')[0];
+        daySelector.innerHTML = weekDays.map((day, index) => {
+            const isSelected = index === state.selectedDayOfWeek;
+            const isToday = index === today;
+            let buttonClasses = 'p-2 rounded-full w-10 h-10 font-bold flex items-center justify-center transition-colors ';
+            if (isSelected) {
+                buttonClasses += 'bg-indigo-600 text-white shadow-md';
+            } else if (isToday) {
+                buttonClasses += 'bg-indigo-100 text-indigo-800';
+            } else {
+                buttonClasses += 'hover:bg-slate-100 text-slate-600';
+            }
+            return `<button data-day="${index}" class="${buttonClasses}">${day}</button>`;
+        }).join('');
+        const tasksForSelectedDay = (state.weeklyRoutineTasks || []).filter(task => task.day_of_week === state.selectedDayOfWeek);
+        let progressHeaderHtml = `<h4 class="text-lg font-semibold text-slate-600 mb-4">Passos para ${weekDays[state.selectedDayOfWeek]}</h4>`;
+        
+        if (state.selectedDayOfWeek === today) {
+            const totalTasks = tasksForSelectedDay.length;
+            const completedTasks = tasksForSelectedDay.filter(task => 
+                (state.weeklyTaskCompletions || []).some(c => c.task_id === task.id && c.completion_date === todayStr)
+            ).length;
+            const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+            progressHeaderHtml = `
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-lg font-semibold text-slate-800">Passos de Hoje</h4>
+                        <span class="text-sm font-bold text-slate-500">${completedTasks} / ${totalTasks}</span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: ${progress}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+        tasksList.innerHTML = tasksForSelectedDay.map(task => {
+            const isCompleted = (state.weeklyTaskCompletions || []).some(c => c.task_id === task.id && c.completion_date === todayStr);
+            const isDisabled = state.selectedDayOfWeek !== today;
+
+            return `
+                <li class="flex items-center justify-between group">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="wtask_${task.id}" data-task-id="${task.id}" class="h-5 w-5 rounded text-indigo-600 weekly-task-check" ${isCompleted ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
+                        <label for="wtask_${task.id}" class="ml-3 ${isCompleted ? 'text-slate-400 line-through' : 'text-slate-800'}">${task.description}</label>
+                    </div>
+                    <button data-task-id="${task.id}" class="delete-weekly-task-btn text-slate-400 hover:text-red-600 p-1 hidden group-hover:block" title="Excluir passo">&times;</button>
+                </li>
+            `;
+        }).join('') || '<li class="text-slate-400 text-sm">Nenhum passo definido para este dia.</li>';
+        
+        if (container.querySelector('.progress-header')) {
+            container.querySelector('.progress-header').remove();
+        }
+        tasksList.insertAdjacentHTML('beforebegin', `<div class="progress-header">${progressHeaderHtml}</div>`);
+    }
+
+
+
+
+
+
+
+
+
+   
+
+
+
     // ===================================================================
     // 7. SETUP DE EVENTOS
     // ===================================================================
@@ -1156,6 +1242,48 @@ function setupCrudListeners() {
                 }
             });
         });
+
+          $('#week').addEventListener('click', async (e) => {
+            const target = e.target;
+            const dayButton = target.closest('#week-day-selector button');
+            if (dayButton) {
+                state.selectedDayOfWeek = parseInt(dayButton.dataset.day, 10);
+                renderWeeklyRoutine();
+                return;
+            }
+            if (target.matches('.weekly-task-check')) {
+                const taskId = target.dataset.taskId;
+                const todayStr = new Date().toISOString().split('T')[0];
+                if (target.checked) {
+                    await supabaseClient.from('weekly_task_completions').insert({ task_id: taskId, profile_id: currentProfileId, completion_date: todayStr });
+                } else {
+                    await supabaseClient.from('weekly_task_completions').delete().match({ task_id: taskId, completion_date: todayStr });
+                }
+                await refreshDataAndRender();
+            }
+
+            const deleteBtn = target.closest('.delete-weekly-task-btn');
+            if (deleteBtn) {
+                const taskId = deleteBtn.dataset.taskId;
+                await supabaseClient.from('weekly_routine_tasks').delete().eq('id', taskId);
+                await refreshDataAndRender();
+            }
+        });
+        $('#add-weekly-task-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = $('#new-weekly-task-input');
+            const description = input.value.trim();
+            if (description && state.selectedDayOfWeek !== undefined) {
+                await supabaseClient.from('weekly_routine_tasks').insert({
+                    description: description,
+                    day_of_week: state.selectedDayOfWeek,
+                    profile_id: currentProfileId
+                });
+                input.value = '';
+                await refreshDataAndRender();
+            }
+        });
+
         $('#week-goals-list').addEventListener('click', async (e) => {
             const button = e.target.closest('button');
             if (!button?.dataset.id) return;
@@ -1168,39 +1296,6 @@ function setupCrudListeners() {
                     onSave: async (data) => {
                         if(!data.text) return;
                         await supabaseClient.from('week_goals').update({ text: data.text }).eq('id', id);
-                        history.back(); await refreshDataAndRender();
-                    }
-                });
-                return;
-            }
-            await refreshDataAndRender();
-        });
-
-        $('#add-habit-btn').addEventListener('click', () => {
-            if (!checkLogin()) return;
-            openCrudModal({ title: 'Novo Hábito', formHtml: `<input name="text" placeholder="Descrição do hábito" class="w-full p-2 border rounded">`,
-                onSave: async (data) => {
-                    if(!data.text) return;
-                    await supabaseClient.from('habits').insert({ text: data.text, profile_id: currentProfileId });
-                    history.back(); await refreshDataAndRender();
-                }
-            });
-        });
-        $('#habits-list').addEventListener('click', async (e) => {
-            const el = e.target.closest('button, input');
-            if (!el?.dataset.id) return;
-            const id = el.dataset.id;
-            if (el.matches('.delete-habit-btn')) {
-                await supabaseClient.from('habits').delete().eq('id', id);
-            } else if (el.matches('.habit-check')) {
-                const habit = state.habits.find(h => h.id == id);
-                await supabaseClient.from('habits').update({ completed: !habit.completed }).eq('id', id);
-            } else if (el.matches('.edit-habit-btn')) {
-                const habit = state.habits.find(h => h.id == id);
-                openCrudModal({ title: 'Editar Hábito', item: habit, formHtml: `<input name="text" class="w-full p-2 border rounded">`,
-                    onSave: async (data) => {
-                        if(!data.text) return;
-                        await supabaseClient.from('habits').update({ text: data.text }).eq('id', id);
                         history.back(); await refreshDataAndRender();
                     }
                 });
