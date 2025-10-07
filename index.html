@@ -480,25 +480,32 @@
             supabaseClient.from('goals').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('month_reminders').select('*').eq('profile_id', profileId),
             supabaseClient.from('shopping_categories').select('*').eq('profile_id', profileId).order('created_at'),
-
             supabaseClient.from('weekly_routine_tasks').select('*').eq('profile_id', profileId),
             supabaseClient.from('weekly_task_completions').select('*').eq('profile_id', profileId),
             supabaseClient.from('weekly_habits').select('*').eq('profile_id', profileId).order('created_at'),
-            supabaseClient.from('habit_completions').select('*').eq('profile_id', profileId)
+            supabaseClient.from('habit_completions').select('*').eq('profile_id', profileId),
+            supabaseClient.from('free_notes').select('content').eq('profile_id', profileId).maybeSingle()
         ];
         try {
             const results = await Promise.all(queries);
-            const [ dayTasks, dayHighlights, notepad, weekGoals, monthAchievements, transactions, shoppingList, todos, goals, monthReminders, shoppingCategories,  weeklyRoutineTasks, weeklyTaskCompletions, weeklyHabits, habitCompletions] = results.map(res => res.data);
+            const [ dayTasks, dayHighlights, notepad, weekGoals, monthAchievements, transactions, shoppingList, todos, goals, monthReminders, shoppingCategories, weeklyRoutineTasks, weeklyTaskCompletions, weeklyHabits, habitCompletions, freeNote ] = results.map(res => res.data);
             state = {
-                dayTasks: dayTasks || [], dayHighlights: dayHighlights || [], notepadContent: notepad?.content || '',
-                weekGoals: weekGoals || [], monthAchievements: monthAchievements || [],
-                transactions: transactions || [], shoppingList: shoppingList || [], todos: todos || [], goals: goals || [],
+                dayTasks: dayTasks || [], 
+                dayHighlights: dayHighlights || [], 
+                notepadContent: notepad?.content || '',
+                weekGoals: weekGoals || [], 
+                monthAchievements: monthAchievements || [],
+                transactions: transactions || [], 
+                shoppingList: shoppingList || [], 
+                todos: todos || [], 
+                goals: goals || [],
                 monthReminders: monthReminders || [],
                 shoppingCategories: shoppingCategories || [],
                 weeklyRoutineTasks: weeklyRoutineTasks || [], 
                 weeklyTaskCompletions: weeklyTaskCompletions || [],
                 weeklyHabits: weeklyHabits || [],
-                habitCompletions: habitCompletions || []
+                habitCompletions: habitCompletions || [],
+                freeNoteContent: freeNote?.content || ''
             };
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
@@ -522,7 +529,7 @@
         if (error) {
             openModal({
                 title: 'Erro no Login',
-                message: 'E-mail ou senha incorretos. Por favor, tente novamente.', // Mensagem mais amigável
+                message: 'E-mail ou senha incorretos. Por favor, tente novamente.', 
                 buttonsHtml: `<button id="modal-retry-login" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Tentar Novamente</button>`
             });
             $('#modal-retry-login').addEventListener('click', () => {
@@ -687,6 +694,7 @@
         renderMonthProductivity();
         renderWeeklyHabits()
         renderMonthAchievements();
+        renderNotesPage();
     }
     
     function updateDashboard() {
@@ -736,23 +744,27 @@
             }
         }
     }
+    function renderNotesPage() {
+        const notepad = $('#main-notepad');
+        if (notepad) {
+            notepad.value = state.freeNoteContent || '';
+        }
+    }
+
 
    function renderDayTasks() {
         const pendingList = $('#day-tasks-list');
         const historyList = $('#day-tasks-history-list');
         if (!pendingList || !historyList || !state.dayTasks) return;
 
-        // 1. Separa tarefas entre pendentes e concluídas
         const pendingTasks = state.dayTasks.filter(task => !task.completed);
         const completedTasks = state.dayTasks.filter(task => task.completed);
 
-        // 2. Filtra o histórico para mostrar apenas tarefas concluídas HOJE
         const today = new Date().toDateString();
         const completedToday = completedTasks
             .filter(task => task.completed_at && new Date(task.completed_at).toDateString() === today)
-            .sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at)); // Mais recentes primeiro
+            .sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at));
 
-        // 3. Renderiza a lista de TAREFAS PENDENTES
         pendingList.innerHTML = pendingTasks.map(task => {
             const subtasksHtml = (task.day_subtasks || []).map(subtask => {
                 return `<li class="flex items-center justify-between ml-8">
@@ -1175,7 +1187,6 @@
             const target = e.target;
             const dateString = modalFormContent.dataset.currentDate;
 
-            // Lógica para ADICIONAR um lembrete
             if (target.matches('button[type="submit"]') && target.closest('form')?.id === 'add-reminder-form') {
                 e.preventDefault(); 
                 const form = target.closest('form');
@@ -1192,8 +1203,6 @@
                     showRemindersForDate(dateString);
                 }
             }
-
-            // Lógica para EXCLUIR um lembrete
             const deleteButton = target.closest('.delete-reminder-btn');
             if (deleteButton) {
                 const id = deleteButton.dataset.id;
@@ -1203,8 +1212,6 @@
                     showRemindersForDate(dateString);
                 }
             }
-
-            // Lógica para EDITAR um lembrete (CORRIGIDA)
             const editButton = target.closest('.edit-reminder-btn');
             if (editButton) {
                 const reminderId = editButton.dataset.id;
@@ -1218,13 +1225,9 @@
                         onSave: async (data) => {
                             if (!data.text) return;
                             await supabaseClient.from('month_reminders').update({ text: data.text }).eq('id', reminderId);
-                            
-                            // --- MUDANÇA CRÍTICA AQUI ---
-                            // Usamos history.back() para fechar o modal de edição corretamente
                             history.back();
                             
                             await refreshDataAndRender();
-                            // Reabre o modal do dia para ver a alteração
                             showRemindersForDate(dateString); 
                         }
                     });
@@ -1242,7 +1245,10 @@
             if (e.target.id === 'main-notepad') {
                 if (!currentProfileId) return;
                 state.freeNoteContent = e.target.value;
-                await supabaseClient.from('free_notes').upsert({ profile_id: currentProfileId, content: e.target.value });
+                await supabaseClient.from('free_notes').upsert(
+                    { profile_id: currentProfileId, content: e.target.value },
+                    { onConflict: 'profile_id' }
+                );
             }
         });
 
