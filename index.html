@@ -290,25 +290,25 @@
             <section id="finance" class="page">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-3xl font-bold text-slate-800">💰 Finanças</h2>
-                    <div class="flex gap-2 w-full sm:w-auto">
-                        <button id="add-expense-btn" class="w-1/2 sm:w-auto bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition">Nova Despesa</button>
-                        <button id="add-income-btn" class="w-1/2 sm:w-auto bg-emerald-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-600 transition">Nova Receita</button>
+                    <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                        <button id="add-expense-btn" class="flex-1 sm:w-auto bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition">Nova Despesa</button>
+                        <button id="add-income-btn" class="flex-1 sm:w-auto bg-emerald-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-600 transition">Nova Receita</button>
+                        <button id="add-recurring-btn" class="w-full sm:w-auto bg-sky-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-sky-600 transition">Nova Conta Recorrente</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 space-y-6">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-xl font-semibold text-slate-700 mb-4">Últimas Transações</h3>
+                            <h3 class="text-xl font-semibold text-slate-700 mb-4">Contas Recorrentes</h3>
+                            <div id="recurring-transactions-list" class="space-y-4">
+                                </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-semibold text-slate-700 mb-4">Últimas Transações (Histórico)</h3>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left min-w-[500px]">
-                                    <thead>
-                                        <tr class="border-b">
-                                            <th class="py-2">Descrição</th>
-                                            <th class="py-2">Categoria</th>
-                                            <th class="py-2 text-right">Valor</th>
-                                            <th class="py-2 text-center">Ações</th>
-                                        </tr>
-                                    </thead>
+                                    <thead><tr class="border-b"><th class="py-2">Descrição</th><th class="py-2">Categoria</th><th class="py-2 text-right">Valor</th><th class="py-2 text-center">Ações</th></tr></thead>
                                     <tbody id="transactions-table-body"></tbody>
                                 </table>
                             </div>
@@ -484,11 +484,12 @@
             supabaseClient.from('weekly_task_completions').select('*').eq('profile_id', profileId),
             supabaseClient.from('weekly_habits').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('habit_completions').select('*').eq('profile_id', profileId),
-            supabaseClient.from('free_notes').select('content').eq('profile_id', profileId).maybeSingle()
+            supabaseClient.from('free_notes').select('content').eq('profile_id', profileId).maybeSingle(),
+            supabaseClient.from('recurring_transactions').select('*').eq('profile_id', profileId).order('created_at')
         ];
         try {
             const results = await Promise.all(queries);
-            const [ dayTasks, dayHighlights, notepad, weekGoals, monthAchievements, transactions, shoppingList, todos, goals, monthReminders, shoppingCategories, weeklyRoutineTasks, weeklyTaskCompletions, weeklyHabits, habitCompletions, freeNote ] = results.map(res => res.data);
+            const [ dayTasks, dayHighlights, notepad, weekGoals, monthAchievements, transactions, shoppingList, todos, goals, monthReminders, shoppingCategories, weeklyRoutineTasks, weeklyTaskCompletions, weeklyHabits, habitCompletions, freeNote, recurringTransactions] = results.map(res => res.data);
             state = {
                 dayTasks: dayTasks || [], 
                 dayHighlights: dayHighlights || [], 
@@ -505,7 +506,8 @@
                 weeklyTaskCompletions: weeklyTaskCompletions || [],
                 weeklyHabits: weeklyHabits || [],
                 habitCompletions: habitCompletions || [],
-                freeNoteContent: freeNote?.content || ''
+                freeNoteContent: freeNote?.content || '',
+                recurringTransactions: recurringTransactions || []
             };
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
@@ -695,6 +697,7 @@
         renderWeeklyHabits()
         renderMonthAchievements();
         renderNotesPage();
+        renderRecurringTransactions()
     }
     
     function updateDashboard() {
@@ -744,6 +747,58 @@
             }
         }
     }
+
+   function renderRecurringTransactions() {
+        const listEl = $('#recurring-transactions-list');
+        if (!listEl) return;
+
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+
+        if (!state.recurringTransactions || state.recurringTransactions.length === 0) {
+            listEl.innerHTML = '<p class="text-slate-400 text-sm">Nenhuma conta recorrente adicionada.</p>';
+            return;
+        }
+
+        listEl.innerHTML = state.recurringTransactions.map(item => {
+            const lastPaid = item.last_paid_date ? new Date(item.last_paid_date + 'T12:00:00') : null;
+            let isPaidThisPeriod = false;
+
+            // Lógica para mensal: verifica se foi pago no mês e ano atuais
+            if (item.interval === 'monthly' && lastPaid && lastPaid.getMonth() === currentMonth && lastPaid.getFullYear() === currentYear) {
+                isPaidThisPeriod = true;
+            }
+            // (Futuramente, outras lógicas como 'semanal', 'diária', etc. podem ser adicionadas aqui)
+
+            const isExpense = item.type === 'expense';
+            const statusClass = isPaidThisPeriod ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800';
+            const statusText = isPaidThisPeriod ? 'Pago este mês' : 'Pendente';
+
+            return `
+                <div class="border-t pt-3">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-semibold ${isExpense ? 'text-red-600' : 'text-emerald-600'}">${item.name}</p>
+                            <p class="text-sm text-slate-500">${item.category || 'Sem categoria'} - Vence todo dia ${item.due_day}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-lg ${isExpense ? 'text-red-600' : 'text-emerald-600'}">${formatCurrency(item.amount)}</p>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 mt-2">
+                        <button class="mark-as-paid-btn text-sm font-semibold ${isPaidThisPeriod ? 'text-gray-400 cursor-not-allowed' : 'text-green-600 hover:text-green-800'}" data-id="${item.id}" ${isPaidThisPeriod ? 'disabled' : ''}>
+                            ✔ ${isPaidThisPeriod ? 'Pago' : 'Confirmar Pagamento'}
+                        </button>
+                        <button class="edit-recurring-btn text-sm text-slate-500 hover:text-indigo-600" data-id="${item.id}">Editar</button>
+                        <button class="delete-recurring-btn text-sm text-slate-500 hover:text-red-600" data-id="${item.id}">Excluir</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
     function renderNotesPage() {
         const notepad = $('#main-notepad');
         if (notepad) {
@@ -790,7 +845,6 @@
             </li>`;
         }).join('') || '<p class="text-slate-400 text-sm">Nenhuma tarefa pendente. Bom trabalho!</p>';
         
-        // 4. Renderiza a lista do HISTÓRICO DE HOJE
         historyList.innerHTML = completedToday.map(task => {
             const completionDate = new Date(task.completed_at);
             const formattedCompletion = completionDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) + ' ' + completionDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -1110,10 +1164,12 @@
         tasksList.insertAdjacentHTML('beforebegin', `<div class="progress-header">${progressHeaderHtml}</div>`);
     }
 
-    function renderWeeklyHabits() {
+   function renderWeeklyHabits() {
         const listEl = $('#weekly-habits-list');
         if (!listEl) return;
+
         const weekDaysMap = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        
         const getStartOfWeek = (date) => {
             const d = new Date(date);
             const day = d.getDay();
@@ -1121,13 +1177,28 @@
             return new Date(d.setDate(diff));
         };
         const startOfWeek = getStartOfWeek(new Date());
+
         if (!state.weeklyHabits || state.weeklyHabits.length === 0) {
             listEl.innerHTML = '<p class="text-slate-400 text-sm">Nenhum hábito fixo adicionado. Crie um para monitorar sua constância!</p>';
             return;
         }
+
         listEl.innerHTML = state.weeklyHabits.map(habit => {
-            const formattedDays = habit.days_of_week.sort().map(d => weekDaysMap[d]).join(', ');
-            const formattedTime = habit.time ? habit.time.substring(0, 5) : '';
+            const formattedDays = habit.days_of_week.sort((a, b) => a - b).map(d => weekDaysMap[d]).join(', ');
+            
+            // --- LÓGICA DE HORÁRIO CORRIGIDA ---
+            let timeString = '';
+            if (habit.time) {
+                const startTime = habit.time.substring(0, 5);
+                // Verifica se também existe um horário de término
+                if (habit.time_end) {
+                    const endTime = habit.time_end.substring(0, 5);
+                    timeString = `— ${startTime} ~ ${endTime}`; // Formato com início e fim
+                } else {
+                    timeString = `— ${startTime}`; // Formato apenas com início
+                }
+            }
+
             const checkboxesHtml = weekDaysMap.map((day, index) => {
                 const currentDate = new Date(startOfWeek);
                 currentDate.setDate(startOfWeek.getDate() + index);
@@ -1139,13 +1210,22 @@
                     <input type="checkbox" data-habit-id="${habit.id}" data-date="${dateString}" class="h-5 w-5 rounded text-green-500 weekly-habit-check" ${isChecked ? 'checked' : ''} ${!isEnabled ? 'disabled' : ''}>
                 </label>`;
             }).join('');
-            return `<div class="border-t pt-4"><div class="flex justify-between items-start"><div>
-                <h4 class="font-semibold text-slate-800">${habit.name}</h4>
-                <p class="text-sm text-slate-500">${formattedDays} ${formattedTime ? `— ${formattedTime}`: ''}</p>
-                </div><div class="flex gap-2">
-                <button class="edit-weekly-habit-btn p-1 text-slate-400 hover:text-indigo-600" data-id="${habit.id}"><svg class="pointer-events-none" width="16" height="16" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" fill="none" stroke="currentColor" stroke-width="2"></path></svg></button>
-                <button class="delete-weekly-habit-btn p-1 text-slate-400 hover:text-red-600" data-id="${habit.id}">&times;</button>
-                </div></div><div class="flex justify-around mt-3">${checkboxesHtml}</div></div>`;
+
+            return `
+                <div class="border-t pt-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-slate-800">${habit.name}</h4>
+                            <p class="text-sm text-slate-500">${formattedDays} ${timeString}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="edit-weekly-habit-btn p-1 text-slate-400 hover:text-indigo-600" data-id="${habit.id}"><svg class="pointer-events-none" width="16" height="16" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" fill="none" stroke="currentColor" stroke-width="2"></path></svg></button>
+                            <button class="delete-weekly-habit-btn p-1 text-slate-400 hover:text-red-600" data-id="${habit.id}">&times;</button>
+                        </div>
+                    </div>
+                    <div class="flex justify-around mt-3">${checkboxesHtml}</div>
+                </div>
+            `;
         }).join('');
     }
 
@@ -1387,7 +1467,6 @@ function setupCrudListeners() {
             await refreshDataAndRender();
         });
 
-        // --- ROTINA POR DIA DA SEMANA (DA PÁGINA #week) ---
         $('#week').addEventListener('click', async (e) => {
             const target = e.target;
             const dayButton = target.closest('#week-day-selector button');
@@ -1425,7 +1504,6 @@ function setupCrudListeners() {
         });
 
 
-         // --- LÓGICA PARA ROTINAS FIXAS DA SEMANA ---
         const daysOfWeekOptions = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
         const habitFormHtml = `
             <input name="name" placeholder="Nome do Hábito (ex: Treinar)" class="w-full p-2 border rounded">
@@ -1437,11 +1515,37 @@ function setupCrudListeners() {
                     `).join('')}
                 </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium">Horário (opcional):</label>
-                <input type="time" name="time" class="w-full p-2 border rounded">
+            <div class="flex items-center gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium">Horário de Início (opcional):</label>
+                    <input type="time" name="time" class="w-full p-2 border rounded">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium">Horário de Término (opcional):</label>
+                    <input type="time" name="time_end" class="w-full p-2 border rounded">
+                </div>
             </div>
         `;
+
+        $('#add-weekly-habit-btn').addEventListener('click', () => {
+            if (!checkLogin()) return;
+            openCrudModal({
+                title: 'Adicionar Hábito Fixo', formHtml: habitFormHtml,
+                onSave: async (data) => {
+                    if (!data.name || !data.days_of_week) return alert('Nome e pelo menos um dia da semana são obrigatórios.');
+                    const days = data.days_of_week.map(Number);
+                    await supabaseClient.from('weekly_habits').insert({ 
+                        name: data.name, 
+                        days_of_week: days, 
+                        time: data.time || null, 
+                        time_end: data.time_end || null,
+                        profile_id: currentProfileId 
+                    });
+                    history.back();
+                    await refreshDataAndRender();
+                }
+            });
+        });
 
         $('#add-weekly-habit-btn').addEventListener('click', () => {
             if (!checkLogin()) return;
@@ -1696,6 +1800,70 @@ function setupCrudListeners() {
             const button = e.target.closest('button'); if (!button || !button.dataset.id) return; const id = button.dataset.id;
             if (button.matches('.delete-goal-btn')) { await supabaseClient.from('goals').delete().eq('id', id); await refreshDataAndRender(); } 
             else if (button.matches('.edit-goal-btn')) { const goal = state.goals.find(g => g.id == id); openCrudModal({ title: 'Editar Meta', item: goal, formHtml: goalFormHtml, onSave: async (data) => { if(!data.text || !data.target) return; await supabaseClient.from('goals').update(data).eq('id', id); history.back(); await refreshDataAndRender(); } }); }
+        });
+
+        const recurringFormHtml = `
+            <input type="text" name="name" placeholder="Descrição (ex: Aluguel)" class="w-full p-2 border rounded">
+            <select name="type" class="w-full p-2 border rounded"><option value="expense">Despesa</option><option value="income">Receita</option></select>
+            <input type="number" name="amount" placeholder="Valor" class="w-full p-2 border rounded">
+            <input type="text" name="category" placeholder="Categoria (ex: Moradia)" class="w-full p-2 border rounded">
+            <select name="interval" class="w-full p-2 border rounded"><option value="monthly">Mensal</option><option value="weekly">Semanal</option><option value="daily">Diária</option></select>
+            <input type="number" name="due_day" placeholder="Dia do Vencimento (ex: 5)" class="w-full p-2 border rounded">
+        `;
+
+        $('#add-recurring-btn').addEventListener('click', () => {
+            if (!checkLogin()) return;
+            openCrudModal({
+                title: 'Nova Conta Recorrente', formHtml: recurringFormHtml,
+                onSave: async (data) => {
+                    if (!data.name || !data.amount || !data.due_day) return alert('Descrição, valor e dia do vencimento são obrigatórios.');
+                    await supabaseClient.from('recurring_transactions').insert({ ...data, profile_id: currentProfileId });
+                    history.back();
+                    await refreshDataAndRender();
+                }
+            });
+        });
+
+        $('#recurring-transactions-list').addEventListener('click', async (e) => {
+            const target = e.target;
+            const recurringId = target.dataset.id;
+            if (!recurringId) return;
+            
+            const item = state.recurringTransactions.find(t => t.id === recurringId);
+            if (!item) return;
+
+            if (target.matches('.mark-as-paid-btn')) {
+                await supabaseClient.from('transactions').insert({
+                    description: item.name,
+                    category: item.category,
+                    amount: item.amount,
+                    type: item.type,
+                    profile_id: currentProfileId
+                });
+
+                await supabaseClient.from('recurring_transactions').update({ 
+                    last_paid_date: new Date().toISOString() 
+                }).eq('id', recurringId);
+
+                await refreshDataAndRender();
+            }
+            if (target.matches('.delete-recurring-btn')) {
+                if (confirm(`Tem certeza que deseja excluir a conta recorrente "${item.name}"?`)) {
+                    await supabaseClient.from('recurring_transactions').delete().eq('id', recurringId);
+                    await refreshDataAndRender();
+                }
+            }
+            if (target.matches('.edit-recurring-btn')) {
+                openCrudModal({
+                    title: 'Editar Conta Recorrente', item: item, formHtml: recurringFormHtml, // `recurringFormHtml` deve estar definido no início da função
+                    onSave: async (data) => {
+                        if (!data.name || !data.amount || !data.due_day) return alert('Descrição, valor e dia do vencimento são obrigatórios.');
+                        await supabaseClient.from('recurring_transactions').update(data).eq('id', recurringId);
+                        history.back();
+                        await refreshDataAndRender();
+                    }
+                });
+            }
         });
     }
 
