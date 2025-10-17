@@ -95,11 +95,11 @@
             align-items: center;
             padding: 10px;
             margin-bottom: 8px;
-            background-color: #f1f5f9; /* slate-100 */
+            background-color: #f1f5f9;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            color: #334155; /* slate-700 */
+            color: #334155;
             position: relative;
 
         }
@@ -118,9 +118,9 @@
         }
         .note-group-content {
             padding-left: 20px;
-            border-left: 2px solid #e2e8f0; /* slate-200 */
+            border-left: 2px solid #e2e8f0;
             margin-left: 15px;
-            display: grid; /* Mantém o grid para as notas */
+            display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 1rem;
         }
@@ -142,7 +142,33 @@
         }
         .color-circle-wrapper input:checked + .color-circle {
             border-color: #fff;
-            box-shadow: 0 0 0 2px #4f46e5; /* Cor indigo para destacar */
+            box-shadow: 0 0 0 2px #4f46e5;
+        }
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 0.5rem 0;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .collapsible-header .arrow {
+            transition: transform 0.2s;
+            color: #64748b;
+        }
+        .collapsible-header.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+        [data-collapsible-content].collapsed {
+            display: none;
+        }
+        #menu-container.menu-open + #swipe-handle {
+                    left: -20px;
+                    opacity: 0;
+                }
+        main.flex-1{
+            padding-top: 3rem;
         }
         @media (max-width: 768px) {
             #menu-container {
@@ -172,15 +198,15 @@
                 margin-bottom: 0;
             }
             main {
-                padding-top: 4rem;
-            }
+                padding-top: 5.5rem; 
+            }    
             #swipe-handle {
             position: fixed;
             left: 0;
             top: 50%;
             transform: translateY(-50%);
-            width: 20px;
-            height: 80px;
+            width: 30px;
+            height: 100px;
             background-color: rgba(79, 70, 229, 0.5);
             border-top-right-radius: 10px;
             border-bottom-right-radius: 10px;
@@ -192,6 +218,9 @@
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             animation: pulse-glow 2s infinite ease-in-out;
+        }
+        main.flex-1 {
+            padding-top: 7.5rem;
         }
         }
         
@@ -209,13 +238,7 @@
                 box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             }
         }
-        #menu-container.menu-open + #swipe-handle {
-            left: -20px;
-            opacity: 0;
-        }
-        main.flex-1{
-            padding-top: 7rem;
-        }
+        
     </style>
 </head>
 <body class="bg-slate-100">
@@ -333,7 +356,7 @@
 
                     <div class="space-y-6">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <div class="flex justify-between items-center mb-3">
+                            <div class="flex flex-col items-start gap-3 mb-3 sm:flex-row sm:items-center sm:justify-between">
                                 <h3 class="text-xl font-semibold text-slate-700">Destaques do Dia</h3>
                                 <button id="add-highlight-btn" class="bg-amber-500 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-amber-600 transition">Adicionar</button>
                             </div>
@@ -357,11 +380,14 @@
             <h2 class="text-3xl font-bold text-slate-800 mb-6">📆 Visão da Semana</h2>
 
             <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
-                <div class="flex justify-between items-center mb-4">
+                <div class="collapsible-header" data-collapsible-trigger>
                     <h3 class="text-xl font-semibold text-slate-700">🧩 Rotinas Fixas da Semana</h3>
-                    <button id="add-weekly-habit-btn" class="bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar Hábito</button>
+                    <div class="flex items-center gap-2">
+                        <button id="add-weekly-habit-btn" class="bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar Hábito</button>
+                        <svg class="arrow w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
                 </div>
-                <div id="weekly-habits-list" class="space-y-6">
+                <div id="weekly-habits-list" class="space-y-6" data-collapsible-content>
                     </div>
             </div>
 
@@ -388,9 +414,6 @@
 
             <section id="month" class="page">
                 <h2 class="text-3xl font-bold text-slate-800 mb-6">📅 Visão do Mês</h2>
-
-
-
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                         <div class="flex justify-between items-center mb-4">
@@ -438,14 +461,20 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 space-y-6">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-xl font-semibold text-slate-700 mb-4">Contas Recorrentes</h3>
-                            <div id="recurring-transactions-list" class="space-y-4">
+                            <div class="collapsible-header" data-collapsible-trigger>
+                                <h3 class="text-xl font-semibold text-slate-700">Contas Recorrentes</h3>
+                                <svg class="arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                            <div id="recurring-transactions-list" class="space-y-4" data-collapsible-content>
                                 </div>
                         </div>
 
                         <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-xl font-semibold text-slate-700 mb-4">Últimas Transações (Histórico)</h3>
-                            <div class="overflow-x-auto">
+                             <div class="collapsible-header" data-collapsible-trigger>
+                                <h3 class="text-xl font-semibold text-slate-700">Últimas Transações (Histórico)</h3>
+                                <svg class="arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                            <div class="overflow-x-auto" data-collapsible-content>
                                 <table class="w-full text-left min-w-[500px]">
                                     <thead><tr class="border-b"><th class="py-2">Descrição</th><th class="py-2">Categoria</th><th class="py-2 text-right">Valor</th><th class="py-2 text-center">Ações</th></tr></thead>
                                     <tbody id="transactions-table-body"></tbody>
@@ -470,7 +499,6 @@
                     </div>
                 </div>
             </section>
-
 
             <section id="buy" class="page">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -647,11 +675,11 @@
             supabaseClient.from('habit_completions').select('*').eq('profile_id', profileId),
             supabaseClient.from('recurring_transactions').select('*').eq('profile_id', profileId).order('created_at'),
             supabaseClient.from('notes').select('*').eq('profile_id', profileId).order('updated_at', { ascending: false }),
-            supabaseClient.from('note_groups').select('*').eq('profile_id', profileId).order('created_at')
+            supabaseClient.from('note_groups').select('*').eq('profile_id', profileId).order('created_at'),
         ];
         try {
             const results = await Promise.all(queries);
-            const [ dayTasks, dayHighlights, notepad, weekGoals, monthAchievements, transactions, shoppingList, todos, goals, monthReminders, shoppingCategories, weeklyRoutineTasks, weeklyTaskCompletions, weeklyHabits, habitCompletions, recurringTransactions, notes,noteGroups  ] = results.map(res => res.data);
+            const [ dayTasks, dayHighlights, notepad, weekGoals, monthAchievements, transactions, shoppingList, todos, goals, monthReminders, shoppingCategories, weeklyRoutineTasks, weeklyTaskCompletions, weeklyHabits, habitCompletions, recurringTransactions, notes,noteGroups] = results.map(res => res.data);
             state = {
                 dayTasks: dayTasks || [], 
                 dayHighlights: dayHighlights || [], 
@@ -670,7 +698,7 @@
                 habitCompletions: habitCompletions || [],
                 recurringTransactions: recurringTransactions || [],
                 notes: notes || [],
-                noteGroups: noteGroups || []
+                noteGroups: noteGroups || [],
             };
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
@@ -711,6 +739,17 @@
     async function signOut() {
         const { error } = await supabaseClient.auth.signOut();
         if (error) showAlert(`Erro ao sair: ${error.message}`);
+    }
+    async function resetPassword(email) {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin,
+        });
+        if (error) {
+            showAlert(`Erro ao redefinir senha: ${error.message}`);
+        } else {
+            history.back();
+            showAlert('Link de recuperação enviado! Verifique a caixa de entrada e spam do seu e-mail.');
+        }
     }
 
     // ===================================================================
@@ -758,11 +797,28 @@
 
     function showAuthModal(type) {
         const isLogin = type === 'login';
+        const formHtmlContent = `
+            <form id="auth-form">
+                <input type="email" id="auth-email" placeholder="seu@email.com" class="w-full p-2 border rounded mb-4" autocomplete="email">
+                <input type="password" id="auth-password" placeholder="Sua senha" class="w-full p-2 border rounded" autocomplete="current-password">
+            </form>
+            ${isLogin ? '<button id="forgot-password-link" class="text-sm text-indigo-600 hover:underline mt-4 text-center w-full">Esqueci minha senha</button>' : ''}
+        `;
+
         openModal({
             title: isLogin ? 'Login' : 'Cadastro',
-            formHtml: `<form id="auth-form"><input type="email" id="auth-email" placeholder="seu@email.com" class="w-full p-2 border rounded mb-4" autocomplete="email"><input type="password" id="auth-password" placeholder="Sua senha" class="w-full p-2 border rounded" autocomplete="current-password"></form>`,
+            formHtml: formHtmlContent,
             buttonsHtml: `<button id="modal-cancel-auth" class="px-4 py-2 bg-slate-200 rounded-lg">Cancelar</button><button id="modal-confirm-auth" type="submit" form="auth-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">${isLogin ? 'Entrar' : 'Cadastrar'}</button>`
         });
+
+        if (isLogin) {
+            $('#forgot-password-link').addEventListener('click', () => {
+                if (!modal.classList.contains('hidden')) {
+                    history.back(); 
+                }
+                setTimeout(showForgotPasswordModal, 310);
+            });
+        }
         $('#modal-cancel-auth').addEventListener('click', () => history.back());
         $('#auth-form').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -771,6 +827,34 @@
             if (!email || !password) return showAlert("Por favor, preencha e-mail e senha.");
             if (isLogin) signIn(email, password);
             else signUp(email, password);
+        });
+    }
+    function showForgotPasswordModal() {
+        openModal({
+            title: 'Redefinir Senha',
+            message: 'Digite seu e-mail para receber um link de redefinição de senha.',
+            formHtml: `
+                <form id="reset-form">
+                    <input type="email" id="reset-email" placeholder="seu@email.com" class="w-full p-2 border rounded" autocomplete="email" required>
+                </form>
+            `,
+            buttonsHtml: `
+                <button id="modal-cancel-reset" class="px-4 py-2 bg-slate-200 rounded-lg">Cancelar</button>
+                <button id="modal-confirm-reset" type="submit" form="reset-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Enviar Link</button>
+            `
+        });
+
+        $('#modal-cancel-reset').addEventListener('click', () => history.back());
+        
+        $('#reset-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = $('#reset-email').value;
+            if (email) {
+                const submitBtn = $('#modal-confirm-reset');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Enviando...';
+                resetPassword(email);
+            }
         });
     }
 
@@ -861,20 +945,20 @@
                 ${isNewNote ? 'Criar Nova Nota' : 'Editar Nota'}
             </h2>
             
-            <div class="flex justify-between items-center mb-4 border-b pb-4">
-                <div class="flex items-center gap-4">
+            <div class="flex flex-col gap-4 md:flex-row md:justify-between md:items-center mb-4 border-b pb-4">
+                <div class="flex items-center justify-between">
                     <button id="back-to-notes-btn" class="flex items-center gap-2 text-slate-600 hover:text-indigo-600 font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                         Voltar
                     </button>
                     ${deleteButtonHtml}
                 </div>
-                <div class="flex items-center gap-4">
-                    <select id="note-group-selector" class="p-2 border rounded-md text-sm bg-white">
+                <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:gap-4">
+                    <select id="note-group-selector" class="p-2 border rounded-md text-sm bg-white w-full sm:w-auto">
                         <option value="">Sem Grupo</option>
                         ${groupsOptions}
                     </select>
-                    <button id="save-note-editor-btn" class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-indigo-700">Salvar</button>
+                    <button id="save-note-editor-btn" class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-indigo-700 w-full sm:w-auto">Salvar</button>
                 </div>
             </div>
             <div class="note-editor-content">
@@ -1301,8 +1385,7 @@
         if (!container) return;
 
         const defaultCategories = [
-            { name: 'Mercado' }, { name: 'Farmácia' }, { name: 'Casa' },
-            { name: 'Tecnologia' }, { name: 'Lazer' }, { name: 'Outros' }
+            { name: 'Mercado' },{ name: 'Tecnologia' }, { name: 'Lazer' }
         ];
 
         const allCategories = [...defaultCategories, ...(state.shoppingCategories || [])];
@@ -1348,7 +1431,7 @@
 
         const activeTodos = state.todos.filter(todo => todo.status !== 'concluido');
         const completedTodos = state.todos.filter(todo => todo.status === 'concluido')
-            .sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at)); // Mais recentes primeiro
+            .sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at));
 
         const priorityMap = { baixa: 'bg-green-100 text-green-800', media: 'bg-amber-100 text-amber-800', alta: 'bg-red-100 text-red-800' };
         const statusMap = { pendente: 'bg-slate-100 text-slate-800', andamento: 'bg-sky-100 text-sky-800' };
@@ -1545,17 +1628,14 @@
 
         listEl.innerHTML = state.weeklyHabits.map(habit => {
             const formattedDays = habit.days_of_week.sort((a, b) => a - b).map(d => weekDaysMap[d]).join(', ');
-            
-            // --- LÓGICA DE HORÁRIO CORRIGIDA ---
             let timeString = '';
             if (habit.time) {
                 const startTime = habit.time.substring(0, 5);
-                // Verifica se também existe um horário de término
                 if (habit.time_end) {
                     const endTime = habit.time_end.substring(0, 5);
-                    timeString = `— ${startTime} ~ ${endTime}`; // Formato com início e fim
+                    timeString = `— ${startTime} ~ ${endTime}`;
                 } else {
-                    timeString = `— ${startTime}`; // Formato apenas com início
+                    timeString = `— ${startTime}`; 
                 }
             }
 
@@ -1703,6 +1783,22 @@
                 }
             }
         });
+
+
+        $('main').addEventListener('click', (e) => {
+            const trigger = e.target.closest('[data-collapsible-trigger]');
+            if (!trigger) return;
+
+            const content = trigger.nextElementSibling;
+            if (content && content.matches('[data-collapsible-content]')) {
+                trigger.classList.toggle('collapsed');
+                content.classList.toggle('collapsed');
+            }
+        });
+
+
+
+
         $('#day').addEventListener('input', async (e) => {
             if (e.target.id === 'notepad') {
                 if (!currentProfileId) return;
@@ -1826,8 +1922,31 @@
         setupCrudListeners();
     }
 
+    const recurringFormHtml = `
+        <input type="text" name="name" placeholder="Descrição (ex: Aluguel, Netflix)" class="w-full p-2 border rounded">
+        <div class="grid grid-cols-2 gap-4">
+            <input type="number" name="amount" placeholder="Valor" step="0.01" class="w-full p-2 border rounded">
+            <input type="number" name="due_day" placeholder="Dia do Vencimento" min="1" max="31" class="w-full p-2 border rounded">
+        </div>
+        <input type="text" name="category" placeholder="Categoria (ex: Moradia, Assinaturas)" class="w-full p-2 border rounded">
+        <div class="space-y-2 border p-3 rounded-md">
+            <label class="block text-sm font-medium">Tipo:</label>
+            <div class="flex gap-4">
+                <label class="flex items-center gap-2"><input type="radio" name="type" value="expense" checked> Despesa</label>
+                <label class="flex items-center gap-2"><input type="radio" name="type" value="income"> Receita</label>
+            </div>
+        </div>
+         <div class="space-y-2 border p-3 rounded-md">
+            <label class="block text-sm font-medium">Intervalo:</label>
+             <select name="interval" class="w-full p-2 border rounded bg-white">
+                <option value="monthly">Mensal</option>
+            </select>
+        </div>
+    `;
+
 
     function setupCrudListeners() {
+        
         $('#day').addEventListener('click', async (e) => {
             const target = e.target;
             const button = target.closest('button, input');
@@ -2305,7 +2424,7 @@
             }
             if (target.matches('.edit-recurring-btn')) {
                 openCrudModal({
-                    title: 'Editar Conta Recorrente', item: item, formHtml: recurringFormHtml, // `recurringFormHtml` deve estar definido no início da função
+                    title: 'Editar Conta Recorrente', item: item, formHtml: recurringFormHtml,
                     onSave: async (data) => {
                         if (!data.name || !data.amount || !data.due_day) return alert('Descrição, valor e dia do vencimento são obrigatórios.');
                         await supabaseClient.from('recurring_transactions').update(data).eq('id', recurringId);
