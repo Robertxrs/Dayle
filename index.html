@@ -741,49 +741,6 @@
         if (error) showAlert(`Erro ao sair: ${error.message}`);
     }
 
-    async function resetPassword(email) {
-        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-            redirectTo: 'https://dayle-orcin.vercel.app/',
-        });
-
-        if (error) {
-            showAlert(`Erro ao redefinir senha: ${error.message}`);
-        } else {
-            history.back(); // Fecha o modal de "esqueci a senha"
-            showAlert('Link de recuperação enviado! Verifique a caixa de entrada e spam do seu e-mail.');
-        }
-    }
-
-    function showForgotPasswordModal() {
-        openModal({
-            title: 'Redefinir Senha',
-            message: 'Digite seu e-mail para receber as instruções de redefinição.',
-            formHtml: `
-                <form id="reset-form">
-                    <input type="email" id="reset-email" placeholder="seu@email.com" class="w-full p-2 border rounded" autocomplete="email" required>
-                </form>
-            `,
-            buttonsHtml: `
-                <button id="modal-cancel-reset" class="px-4 py-2 bg-slate-200 rounded-lg">Cancelar</button>
-                <button id="modal-confirm-reset" type="submit" form="reset-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Enviar Link</button>
-            `
-        });
-
-        $('#modal-cancel-reset').addEventListener('click', () => history.back());
-        
-        $('#reset-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = $('#reset-email').value;
-            if (email) {
-                const submitBtn = $('#modal-confirm-reset');
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Enviando...';
-                resetPassword(email);
-            }
-        });
-    }
-
-
     // ===================================================================
     // 4. LÓGICA DO MODAL PERSONALIZADO
     // ===================================================================
@@ -829,99 +786,21 @@
 
     function showAuthModal(type) {
         const isLogin = type === 'login';
-        
-        const formHtmlContent = `
-            <form id="auth-form">
-                <input type="email" id="auth-email" placeholder="Seu@email.com" class="w-full p-2 border rounded mb-4" autocomplete="email">
-                <input type="password" id="auth-password" placeholder="Sua senha" class="w-full p-2 border rounded" autocomplete="current-password">
-            </form>
-            <div id="login-error-message" class="text-red-500 text-sm mt-2 text-center"></div>
-            ${isLogin ? '<button id="forgot-password-link" class="text-sm text-indigo-600 hover:underline mt-4 text-center w-full">Esqueci minha senha</button>' : ''}
-        `;
-        
         openModal({
             title: isLogin ? 'Login' : 'Cadastro',
-            formHtml: formHtmlContent,
+            formHtml: `<form id="auth-form"><input type="email" id="auth-email" placeholder="Seu@email.com" class="w-full p-2 border rounded mb-4" autocomplete="email"><input type="password" id="auth-password" placeholder="Sua senha" class="w-full p-2 border rounded" autocomplete="current-password"></form>`,
             buttonsHtml: `<button id="modal-cancel-auth" class="px-4 py-2 bg-slate-200 rounded-lg">Cancelar</button><button id="modal-confirm-auth" type="submit" form="auth-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">${isLogin ? 'Entrar' : 'Cadastrar'}</button>`
         });
-
         $('#modal-cancel-auth').addEventListener('click', () => history.back());
-        
-        $('#auth-form').addEventListener('submit', async (e) => {
+        $('#auth-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = $('#auth-email').value;
             const password = $('#auth-password').value;
             if (!email || !password) return showAlert("Por favor, preencha e-mail e senha.");
-
-            if (isLogin) {
-                await signIn(email, password);
-            } else {
-                await signUp(email, password);
-            }
-        });
-
-        if (isLogin) {
-            const forgotPasswordLink = $('#forgot-password-link');
-            if(forgotPasswordLink) {
-                forgotPasswordLink.addEventListener('click', () => {
-                    if (!modal.classList.contains('hidden')) {
-                         history.back();
-                    }
-                    setTimeout(showForgotPasswordModal, 310); 
-                });
-            }
-        }
-    }
-
-
-    function showPasswordUpdateModal() {
-        openModal({
-            title: 'Crie uma Nova Senha',
-            message: 'Sua nova senha deve ser diferente da anterior.',
-            formHtml: `
-                <form id="update-password-form" class="space-y-4">
-                    <input type="password" id="new-password" placeholder="Nova senha" class="w-full p-2 border rounded" required>
-                    <input type="password" id="confirm-password" placeholder="Confirme a nova senha" class="w-full p-2 border rounded" required>
-                </form>
-            `,
-            buttonsHtml: `
-                <button id="modal-confirm-update" type="submit" form="update-password-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg w-full">Salvar Nova Senha</button>
-            `
-        });
-
-        $('#update-password-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newPassword = $('#new-password').value;
-            const confirmPassword = $('#confirm-password').value;
-
-            if (newPassword !== confirmPassword) {
-                showAlert('As senhas não coincidem. Tente novamente.');
-                return;
-            }
-            if (newPassword.length < 6) {
-                showAlert('A senha deve ter no mínimo 6 caracteres.');
-                return;
-            }
-
-            const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
-
-            if (error) {
-                showAlert(`Erro ao atualizar a senha: ${error.message}`);
-            } else {
-                history.back(); // Fecha o modal
-                showAlert('Senha atualizada com sucesso! Você já pode fazer o login.');
-            }
+            if (isLogin) signIn(email, password);
+            else signUp(email, password);
         });
     }
-
-
-
-
-
-
-
-
-
 
     function openCrudModal(options) {
         openModal({
@@ -2604,17 +2483,14 @@
     // ===================================================================
     // 8. INICIALIZAÇÃO DA APLICAÇÃO
     // ===================================================================
-    
+    supabaseClient.auth.onAuthStateChange(() => {
+        refreshDataAndRender();
+    });
+
     setupEventListeners();
     await refreshDataAndRender(); 
     const initialHash = window.location.hash || '#dashboard';
     showPage(initialHash);
-
-    supabaseClient.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'PASSWORD_RECOVERY') {
-            setTimeout(showPasswordUpdateModal, 500);
-        }
-    });
 
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
