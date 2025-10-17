@@ -786,10 +786,18 @@
 
     function showAuthModal(type) {
         const isLogin = type === 'login';
+        const forgotPasswordLink = isLogin
+            ? `<div class="text-right mt-2"><a href="#" id="forgot-password-link" class="text-sm text-indigo-600 hover:underline">Esqueceu a senha?</a></div>`
+            : '';
         openModal({
             title: isLogin ? 'Login' : 'Cadastro',
-            formHtml: `<form id="auth-form"><input type="email" id="auth-email" placeholder="Seu@email.com" class="w-full p-2 border rounded mb-4" autocomplete="email"><input type="password" id="auth-password" placeholder="Sua senha" class="w-full p-2 border rounded" autocomplete="current-password"></form>`,
-            buttonsHtml: `<button id="modal-cancel-auth" class="px-4 py-2 bg-slate-200 rounded-lg">Cancelar</button><button id="modal-confirm-auth" type="submit" form="auth-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">${isLogin ? 'Entrar' : 'Cadastrar'}</button>`
+            formHtml: `<form id="auth-form">
+                        <input type="email" id="auth-email" placeholder="Seu@email.com" class="w-full p-2 border rounded mb-4" autocomplete="email">
+                        <input type="password" id="auth-password" placeholder="Sua senha" class="w-full p-2 border rounded" autocomplete="current-password">
+                        ${forgotPasswordLink}
+                    </form>`,
+            buttonsHtml: `<button id="modal-cancel-auth" class="px-4 py-2 bg-slate-200 rounded-lg">Cancelar</button>
+                        <button id="modal-confirm-auth" type="submit" form="auth-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">${isLogin ? 'Entrar' : 'Cadastrar'}</button>`
         });
         $('#modal-cancel-auth').addEventListener('click', () => history.back());
         $('#auth-form').addEventListener('submit', (e) => {
@@ -801,6 +809,88 @@
             else signUp(email, password);
         });
     }
+
+
+    function showForgotPasswordModal() {
+        openModal({
+            title: 'Recuperar Senha',
+            formHtml: `
+                <form id="forgot-password-form">
+                    <p class="text-slate-600 mb-4 text-sm">Digite seu e-mail abaixo. Se ele estiver cadastrado, enviaremos um link para você criar uma nova senha.</p>
+                    <input type="email" id="forgot-email" placeholder="Seu@email.com" class="w-full p-2 border rounded" required>
+                </form>
+            `,
+            buttonsHtml: `
+                <button id="modal-cancel-forgot" class="px-4 py-2 bg-slate-200 rounded-lg">Cancelar</button>
+                <button id="modal-send-link" type="submit" form="forgot-password-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Enviar Link</button>
+            `
+        });
+
+        $('#modal-cancel-forgot').addEventListener('click', () => history.back());
+
+        $('#forgot-password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = $('#forgot-email').value;
+            const sendButton = $('#modal-send-link');
+            sendButton.disabled = true;
+            sendButton.textContent = 'Enviando...';
+
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.href.split('#')[0], // Envia para a página atual, sem o hash
+            });
+
+            if (error) {
+                showAlert(`Erro: ${error.message}`);
+            } else {
+                closeModal();
+                showAlert('Link de recuperação enviado! Verifique sua caixa de entrada (e a pasta de spam).');
+            }
+            
+            sendButton.disabled = false;
+            sendButton.textContent = 'Enviar Link';
+        });
+    }
+
+    function showUpdatePasswordModal() {
+        openModal({
+            title: 'Crie sua Nova Senha',
+            formHtml: `
+                <form id="update-password-form">
+                    <input type="password" id="update-password" placeholder="Digite a nova senha" class="w-full p-2 border rounded mb-4" required>
+                    <input type="password" id="update-password-confirm" placeholder="Confirme a nova senha" class="w-full p-2 border rounded" required>
+                </form>
+            `,
+            buttonsHtml: `
+                <button id="modal-confirm-update" type="submit" form="update-password-form" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Salvar Nova Senha</button>
+            `
+        });
+
+        $('#update-password-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = $('#update-password').value;
+            const passwordConfirm = $('#update-password-confirm').value;
+
+            if (password !== passwordConfirm) {
+                return showAlert('As senhas não coincidem.');
+            }
+            if (password.length < 6) {
+                return showAlert('A senha deve ter no mínimo 6 caracteres.');
+            }
+
+            const { error } = await supabaseClient.auth.updateUser({ password: password });
+
+            if (error) {
+                showAlert(`Erro ao atualizar senha: ${error.message}`);
+            } else {
+                closeModal();
+                showAlert('Senha alterada com sucesso! Você já pode fazer o login com a nova senha.');
+            }
+        });
+    }
+
+
+
+
 
     function openCrudModal(options) {
         openModal({
@@ -1628,6 +1718,8 @@
         let touchEndX = 0;
         const swipeThreshold = 50;
 
+
+
         document.addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
         }, { passive: true });
@@ -1636,6 +1728,19 @@
             touchEndX = e.changedTouches[0].screenX;
             handleSwipeGesture();
         });
+
+       document.body.addEventListener('click', (e) => {
+            if (e.target.id === 'forgot-password-link') {
+                e.preventDefault();
+                closeModal();
+                setTimeout(() => {
+                    showForgotPasswordModal();
+                }, 300);
+            }
+        });
+
+
+
 
         function handleSwipeGesture() {
             const swipeDistance = touchEndX - touchStartX;
@@ -2483,12 +2588,17 @@
     // ===================================================================
     // 8. INICIALIZAÇÃO DA APLICAÇÃO
     // ===================================================================
-    supabaseClient.auth.onAuthStateChange(() => {
-        refreshDataAndRender();
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+            showUpdatePasswordModal();
+        }
+        else {
+           refreshDataAndRender();
+        }
     });
-
     setupEventListeners();
-    await refreshDataAndRender(); 
+    await refreshDataAndRender();
+
     const initialHash = window.location.hash || '#dashboard';
     showPage(initialHash);
 
