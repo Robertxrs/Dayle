@@ -205,8 +205,8 @@
             left: 0;
             top: 50%;
             transform: translateY(-50%);
-            width: 30px;
-            height: 100px;
+            width: 40px;
+            height: 110px;
             background-color: rgba(79, 70, 229, 0.5);
             border-top-right-radius: 10px;
             border-bottom-right-radius: 10px;
@@ -220,7 +220,7 @@
             animation: pulse-glow 2s infinite ease-in-out;
         }
         main.flex-1 {
-            padding-top: 7.5rem;
+            padding-top: 9rem;
         }
         }
         
@@ -380,10 +380,10 @@
             <h2 class="text-3xl font-bold text-slate-800 mb-6">📆 Visão da Semana</h2>
 
             <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
-                <div class="collapsible-header" data-collapsible-trigger>
-                    <h3 class="text-xl font-semibold text-slate-700">🧩 Rotinas Fixas da Semana</h3>
-                    <div class="flex items-center gap-2">
-                        <button id="add-weekly-habit-btn" class="bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar Hábito</button>
+                <div class="collapsible-header flex-col sm:flex-row items-start sm:items-center" data-collapsible-trigger>
+                    <h3 class="text-xl font-semibold text-slate-700 mb-2 sm:mb-0">🧩 Rotinas Fixas da Semana</h3>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <button id="add-weekly-habit-btn" class="w-full sm:w-auto bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar Hábito</button>
                         <svg class="arrow w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </div>
                 </div>
@@ -393,9 +393,9 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="bg-white p-6 rounded-lg shadow-sm">
-                    <div class="flex justify-between items-center mb-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
                         <h3 class="text-xl font-semibold text-slate-700">🎯 Objetivos da Semana</h3>
-                        <button id="add-week-goal-btn" class="bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar</button>
+                        <button id="add-week-goal-btn" class="w-full sm:w-auto bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar</button>
                     </div>
                     <ul id="week-goals-list" class="space-y-2 list-disc list-inside text-slate-700"></ul>
                 </div>
@@ -403,13 +403,23 @@
                     <div id="week-day-selector" class="flex justify-between border-b pb-4 mb-4"></div>
                     <div>
                         <ul id="weekly-tasks-list" class="space-y-3 mb-4"></ul>
-                        <form id="add-weekly-task-form" class="flex gap-2">
+                        <form id="add-weekly-task-form" class="flex flex-col sm:flex-row gap-2">
                             <input type="text" id="new-weekly-task-input" placeholder="Adicionar passo à rotina..." class="flex-grow p-2 border rounded-md" required>
-                            <button type="submit" class="bg-indigo-600 text-white px-4 rounded-md font-semibold hover:bg-indigo-700">Adicionar</button>
+                            <button type="submit" class="w-full sm:w-auto bg-indigo-600 text-white px-4 rounded-md font-semibold hover:bg-indigo-700">Adicionar</button>
                         </form>
                     </div>
                 </div>
             </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
+                <div class="collapsible-header flex-col sm:flex-row items-start sm:items-center" data-collapsible-trigger>
+                    <h3 class="text-xl font-semibold text-slate-700 mb-2 sm:mb-0">🧩 Rotinas Fixas da Semana</h3>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <button id="add-weekly-habit-btn" class="w-full sm:w-auto bg-indigo-600 text-white px-3 py-1 text-sm rounded-md font-semibold hover:bg-indigo-700 transition">Adicionar Hábito</button>
+                        <svg class="arrow w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+            </div>
+
         </section>
 
             <section id="month" class="page">
@@ -555,9 +565,9 @@
             </section>
 
             <section id="notes" class="page">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <h2 class="text-3xl font-bold text-slate-800">📝 Todas as Notas</h2>
-                    <div class="flex gap-2">
+                    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                         <button id="add-note-group-btn" class="bg-sky-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-sky-700 transition">
                             Novo Grupo +
                         </button>
@@ -2523,62 +2533,89 @@
             await refreshDataAndRender();
         });
 
-       
-        $('#goals-list').addEventListener('mousedown', (e) => {
+    
+        const handleGoalAdjust = (goalId, action) => {
+            const goal = state.goals.find(g => g.id === goalId); if (!goal) return;
+            const updateGoal = (step) => { if (action === 'increment') { goal.current += step; } else if (action === 'decrement') { goal.current = Math.max(0, goal.current - step); } renderGoals(); };
+            updateGoal(1);
+            let currentStep = 1; let speed = 160;
+            holdTimeout = setTimeout(() => {
+                holdInterval = setInterval(() => {
+                    if (speed < 70) { currentStep = 10; } else if (speed < 120) { currentStep = 5; } else { currentStep = 1; }
+                    speed = Math.max(30, speed * 0.90);
+                    updateGoal(currentStep);
+                }, speed);
+            }, 400);
+            
+            const stopAction = () => {
+                clearTimeout(holdTimeout); clearInterval(holdInterval);
+                document.removeEventListener('mouseup', stopAction); 
+                document.removeEventListener('mouseleave', stopAction);
+                document.removeEventListener('touchend', stopAction);
+                document.removeEventListener('touchcancel', stopAction);
+                stopHolding(goalId); 
+            };
+            
+            document.addEventListener('mouseup', stopAction);
+            document.addEventListener('mouseleave', stopAction);
+            document.addEventListener('touchend', stopAction);
+            document.addEventListener('touchcancel', stopAction);
+        };
+        const handleGoalDrag = (e) => {
+            e.preventDefault();
+            const progressBarContainer = e.target.closest('.progress-bar-container');
+            if (!progressBarContainer) return;
+            
+            const goalId = progressBarContainer.dataset.id;
+            const goal = state.goals.find(g => g.id === goalId);
+            if (!goal || !goal.target) return;
+
+            const handleDragMove = (moveEvent) => {
+                const event = moveEvent.touches ? moveEvent.touches[0] : moveEvent; 
+                const currentProgressBar = document.querySelector(`.progress-bar-container[data-id="${goalId}"]`);
+                if (!currentProgressBar) return; 
+                
+                const rect = currentProgressBar.getBoundingClientRect();
+                let offsetX = event.clientX - rect.left;
+                offsetX = Math.max(0, Math.min(offsetX, rect.width));
+                const newPercentage = rect.width > 0 ? (offsetX / rect.width) * 100 : 0;
+                const newCurrent = (newPercentage / 100) * goal.target;
+                goal.current = Math.round(newCurrent * 100) / 100; 
+                renderGoals();
+            };
+
+            const handleDragEnd = async () => {
+                document.removeEventListener('mousemove', handleDragMove);
+                document.removeEventListener('mouseup', handleDragEnd);
+                document.removeEventListener('touchmove', handleDragMove);
+                document.removeEventListener('touchend', handleDragEnd);
+                
+                goal.current = Math.round(goal.current * 100) / 100;
+                await supabaseClient.from('goals').update({ current: goal.current }).eq('id', goalId);
+                renderGoals();
+            };
+            
+            document.addEventListener('mousemove', handleDragMove);
+            document.addEventListener('mouseup', handleDragEnd);
+            document.addEventListener('touchmove', handleDragMove, { passive: true });
+            document.addEventListener('touchend', handleDragEnd);
+            
+            handleDragMove(e);
+        };
+
+        const handleGoalInteractionStart = (e) => {
             const button = e.target.closest('.goal-adjust-btn');
             const progressBarContainer = e.target.closest('.progress-bar-container');
-
+            
             if (button) {
-                const goalId = button.dataset.id; const action = button.dataset.action; const goal = state.goals.find(g => g.id === goalId); if (!goal) return;
-                const updateGoal = (step) => { if (action === 'increment') { goal.current += step; } else if (action === 'decrement') { goal.current = Math.max(0, goal.current - step); } renderGoals(); };
-                updateGoal(1);
-                let currentStep = 1; let speed = 160;
-                holdTimeout = setTimeout(() => {
-                    holdInterval = setInterval(() => {
-                        if (speed < 70) { currentStep = 10; } else if (speed < 120) { currentStep = 5; } else { currentStep = 1; }
-                        speed = Math.max(30, speed * 0.90);
-                        updateGoal(currentStep);
-                    }, speed);
-                }, 400);
-                const stopAction = () => { document.removeEventListener('mouseup', stopAction); button.removeEventListener('mouseleave', stopAction); stopHolding(goalId); };
-                document.addEventListener('mouseup', stopAction);
-                button.addEventListener('mouseleave', stopAction);
-
+                handleGoalAdjust(button.dataset.id, button.dataset.action);
             } else if (progressBarContainer) {
-                e.preventDefault();
-                const goalId = progressBarContainer.dataset.id;
-                const goal = state.goals.find(g => g.id === goalId);
-                if (!goal || !goal.target) return;
-
-                const handleMouseMove = (moveEvent) => {
-                    const currentProgressBar = document.querySelector(`.progress-bar-container[data-id="${goalId}"]`);
-                    if (!currentProgressBar) return; 
-
-                    const rect = currentProgressBar.getBoundingClientRect();
-                    let offsetX = moveEvent.clientX - rect.left;
-                    
-                    offsetX = Math.max(0, Math.min(offsetX, rect.width));
-                    const newPercentage = rect.width > 0 ? (offsetX / rect.width) * 100 : 0;
-                    const newCurrent = (newPercentage / 100) * goal.target;
-                    
-                    goal.current = Math.round(newCurrent * 100) / 100; 
-                    renderGoals();
-                };
-
-                const handleMouseUp = async () => {
-                    document.removeEventListener('mousemove', handleMouseMove);
-                    document.removeEventListener('mouseup', handleMouseUp);
-                    goal.current = Math.round(goal.current * 100) / 100;
-                    await supabaseClient.from('goals').update({ current: goal.current }).eq('id', goalId);
-                    renderGoals();
-                };
-                
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-                
-                handleMouseMove(e);
+                handleGoalDrag(e);
             }
-        });
+        };
+
+        $('#goals-list').addEventListener('mousedown', handleGoalInteractionStart);
+        $('#goals-list').addEventListener('touchstart', handleGoalInteractionStart, { passive: false });
 
 
 
